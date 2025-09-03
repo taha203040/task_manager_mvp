@@ -1,0 +1,116 @@
+Always show details
+# Let's properly close the multiline string and write the README file.
+
+readme_content = """# Secure API with File Upload and Virus Scanning
+
+## 📌 Overview
+This project is a **secure REST API** built with **Node.js + Express** that allows users to upload files safely.  
+It integrates **ClamAV (Clam AntiVirus)** to scan uploaded files in real-time and block malicious files before saving.
+
+---
+
+## 🚀 Features
+- 🔐 Secure file upload API (using Express & Multer)
+- 🛡 Virus scanning with **ClamAV**
+- 📂 Store only safe files, reject infected ones
+- ⚡ Async/Await-based clean code
+- 📝 Easy to integrate into other apps
+
+---
+
+## 📦 Requirements
+- Node.js (>=16)
+- npm or yarn
+- ClamAV installed and running (`clamd` service)
+
+---
+
+## ⚙️ Setup
+
+### 1️⃣ Clone the project
+```bash
+git clone https://github.com/your-username/secure_api.git
+cd secure_api
+
+2️⃣ Install dependencies
+Always show details
+npm install
+
+3️⃣ Install and run ClamAV (Linux/WSL)
+Always show details
+sudo apt update
+sudo apt install clamav clamav-daemon -y
+sudo systemctl stop clamav-freshclam
+sudo freshclam  # update virus database
+sudo systemctl start clamav-daemon
+
+
+Check if it's running:
+
+Always show details
+systemctl status clamav-daemon
+
+4️⃣ Environment variables
+
+Create a .env file in the project root:
+
+Always show details
+PORT=3000
+UPLOAD_DIR=./uploads
+CLAMAV_SOCKET=/run/clamav/clamd.ctl
+
+5️⃣ Run the server
+Always show details
+npm run dev
+
+
+or
+
+Always show details
+node server.js
+
+📤 File Upload API
+Endpoint: POST /upload
+
+Accepts file via multipart/form-data
+
+Scans file with ClamAV
+
+Saves file only if clean
+
+Example request with curl:
+
+Always show details
+curl -F "file=@test.pdf" http://localhost:3000/upload
+
+
+Example response:
+
+Always show details
+{
+  "status": "success",
+  "message": "File uploaded and scanned successfully."
+}
+
+
+If the file is infected:
+
+Always show details
+{
+  "status": "error",
+  "message": "Infected file detected! Upload rejected."
+}
+
+🛠 Tech Stack
+
+Node.js + Express → REST API
+
+Multer → File upload middleware
+
+ClamAV → Antivirus scanning
+
+📌 Notes
+
+Make sure ClamAV daemon is running before starting the app.
+
+If you're using WSL, ensure clamd socket is available at /run/clamav/clamd.ctl.
