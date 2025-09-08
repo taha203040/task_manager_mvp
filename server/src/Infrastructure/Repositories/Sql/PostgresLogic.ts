@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { User } from "../../../Domain/Entities/User_Entities";
-import { UserRep } from "../../../Domain/Repositories/UserRepository";
+import { UserRep } from "../../../Application/Repositories/UserRepository";
 // import { FileRepo } from "../../../Domain/Repositories/UploadFileRepo";
 // import { File } from "../../../Domain/Entities/File_Entities";
 

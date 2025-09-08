@@ -1,5 +1,5 @@
 import express, { type Request, type Response } from 'express';
-import { connectMongodb, getDb } from './Infrastructure/database/mongoDb/mongoClient';
+import { connectMongodb, getDb } from './Infrastructure/Repositories/mongoDb/mongoClient';
 import userRouter from './Interfaces/http/Routes/user.routes';
 import filerouter from './Interfaces/http/Routes/file.routes';
 const app = express();

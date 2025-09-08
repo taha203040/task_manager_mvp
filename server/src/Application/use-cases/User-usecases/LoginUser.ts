@@ -1,11 +1,11 @@
-import { UserRep } from "../../../Domain/Repositories/UserRepository";
-import { JwtRepo } from "../../../Domain/Repositories/jwtRepoDef";
+import { UserRep } from "../../Repositories/UserRepository";
+// import { JwtRepo } from "../../../Domain/Repositories/jwtRepoDef";
 import bcrypt from "bcrypt";
 
 export class LoginUser {
     constructor(
         private userRepo: UserRep,
-        private jwt?: JwtRepo
+        // private jwt?: JwtRepo
     ) { }
 
     async execute(email: string, password: string) {

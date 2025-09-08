@@ -5,7 +5,7 @@ import { GetFileByid } from "../../../Application/use-cases/File-usecases/Getfil
 import jwt from 'jsonwebtoken'
 import { authenticate } from "../middlewares/authMiddleware";
 import { Router, Response, Request } from "express";
-import { FileRepoPostgres } from "../../../Infrastructure/database/Sql/PostgresLogic";
+import { FileRepoPostgres } from "../../../Infrastructure/Repositories/Sql/PostgresLogic";
 import { UploadFile } from "../../../Application/use-cases/File-usecases/uploadFile";
 import multer from 'multer'
 import { fileScan } from "../../../Infrastructure/security/fileChecker";

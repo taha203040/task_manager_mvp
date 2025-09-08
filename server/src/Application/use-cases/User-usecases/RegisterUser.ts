@@ -1,5 +1,5 @@
 import type { User } from "../../../Domain/Entities/User_Entities";
-import type { UserRep } from "../../../Domain/Repositories/UserRepository";
+import type { UserRep } from "../../Repositories/UserRepository";
 import bcrypt from "bcrypt";
 
 export class RegistserUser {
