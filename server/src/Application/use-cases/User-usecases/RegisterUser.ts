@@ -1,4 +1,4 @@
-import type { User } from "../../../Domain/Entities/User_Entities";
+import { User } from "../../../Domain/Entities/User_Entities";
 import type { UserRep } from "../../Repositories/UserRepository";
 import bcrypt from "bcrypt";
 
@@ -13,7 +13,8 @@ export class RegistserUser {
             id: crypto.randomUUID(),
             password: hashed,
             email: email,
-            username: username
+            username: username,
+            role: 'hello'
         }
         await this.userrepo.create(user)
     }

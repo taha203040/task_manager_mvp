@@ -1,3 +1,16 @@
+export class Task {
+    constructor(
+        public readonly id: string,
+        public title: string,
+        public content: string,
+        public state: TaskStatus = TaskStatus.TODO, // قيمة افتراضية
+        public priority: TaskPriority = TaskPriority.MEDIUM,
+        public readonly createdAt: Date = new Date(),
+        public updatedAt: Date = new Date(),
+        public readonly userId: string, // صاحب المهمة
+    ) { }
+}
+
 export enum TaskStatus {
     TODO = "TODO",                 // لم يبدأ العمل عليها بعد
     IN_PROGRESS = "IN_PROGRESS",   // جاري العمل عليها
@@ -10,7 +23,8 @@ export enum UserRole {
     ADMIN = "ADMIN",       // مدير النظام: إدارة الفرق والمهام والمستخدمين
     MANAGER = "MANAGER",   // قائد الفريق: إدارة مهام الفريق
     MEMBER = "MEMBER",     // عضو الفريق: تنفيذ المهام فقط
-    VIEWER = "VIEWER",     // مستخدم يملك صلاحيات قراءة فقط
+    VIEWER = "VIEWER",     // مستخدم يملك صلاحيات قراءة فقط 
+    USER = 'USER'
 }
 export enum TaskPriority {
     LOW = "LOW",           // أولوية منخفضة

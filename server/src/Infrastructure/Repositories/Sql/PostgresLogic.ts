@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { User } from "../../../Domain/Entities/User_Entities";
 import { UserRep } from "../../../Application/Repositories/UserRepository";
+import { TaskType } from "../../../Domain/Entities/Task";
 // import { FileRepo } from "../../../Domain/Repositories/UploadFileRepo";
 // import { File } from "../../../Domain/Entities/File_Entities";
 
@@ -8,11 +9,16 @@ export class UserRepoPostgress implements UserRep {
     constructor(private pool: Pool) {
     }
     async create(user: User) {
-        await this.pool.query("INSERT INTO users (email , password) VALUES ($1,$2)", [user.email, user.password])
+        await this.pool.query("INSERT INTO users (email , password , roles) VALUES ($1,$2)", [user.email, user.password, user.role])
     }
     async findByEmail(email: string): Promise<User | null> {
         const result = await this.pool.query("SELECT * FROM users WHERE email = $1", [email])
         return result.rows[0] || null
+    }
+}
+export class TaskRepoPostGress  {
+    constructor(private pool :Pool) {
+        
     }
 }
 // export class FileRepoPostgres implements FileRepo {
