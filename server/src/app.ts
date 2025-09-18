@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import { connectMongodb, getDb } from './Infrastructure/Repositories/mongoDb/mongoClient';
 import userRouter from './Interfaces/http/Routes/user.routes';
-import filerouter from './Interfaces/http/Routes/file.routes';
+// import filerouter from './Interfaces/http/Routes/file.routes';
 const app = express();
 import rateLimit from 'express-rate-limit';
 
@@ -14,7 +14,7 @@ const limmiter = rateLimit({
 })
 app.use(express.json());
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/files', filerouter);
+// app.use('/api/v1/files', filerouter);
 
 async function startServer() {
     await connectMongodb("mongodb://localhost:27017/", "mydb");

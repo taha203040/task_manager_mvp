@@ -4,7 +4,7 @@ const pool = new Pool({
     ,
     host: "localhost"
     ,
-    database: "postgres"
+    database: "task_manager"
     ,
     password: "0000"
     ,

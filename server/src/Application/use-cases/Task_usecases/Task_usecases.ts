@@ -3,7 +3,7 @@ export class UpdateTaskPriority {
     constructor(private taskRepo: TaskRepo) { }
 
     async execute(id: string, priority: string): Promise<void> {
-        await this.taskRepo.updatePriority(id, priority );
+        await this.taskRepo.updatePriority(id, priority);
     }
 }
 export class UpdateTaskStatus {

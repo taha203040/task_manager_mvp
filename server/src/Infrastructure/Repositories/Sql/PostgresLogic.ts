@@ -16,9 +16,9 @@ export class UserRepoPostgress implements UserRep {
         return result.rows[0] || null
     }
 }
-export class TaskRepoPostGress  {
-    constructor(private pool :Pool) {
-        
+export class TaskRepoPostGress {
+    constructor(private pool: Pool) {
+
     }
 }
 // export class FileRepoPostgres implements FileRepo {
