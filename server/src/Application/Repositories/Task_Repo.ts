@@ -5,20 +5,10 @@
  * 
  */
 import { Task } from "../../Domain/Entities/Task";
-
 export interface TaskRepo {
     create(task: Task): Promise<void>;
     getTasksByUser(userId: string): Promise<Task[]>;
-    getById(id: string): Promise<Task | null>;
-    update(task: Task): Promise<void>;
-    updatePriority(
-        id: string,
-
-        priority: string
-    ): Promise<void>;
-    updateState(
-        id: string,
-        state: string,
-    ): Promise<void>;
-    delete(id: string): Promise<void>;
+    getById(id: string, userId: string): Promise<Task | null>;
+    delete(id: string, userId: string): Promise<void>
+    update(task: Task, userId: string): Promise<void>;
 }

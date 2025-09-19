@@ -1,15 +1,54 @@
+import { Task } from "../../../Domain/Entities/Task";
 import { TaskRepo } from "../../Repositories/Task_Repo";
-export class UpdateTaskPriority {
+
+
+export class CreateTask {
     constructor(private taskRepo: TaskRepo) { }
 
-    async execute(id: string, priority: string): Promise<void> {
-        await this.taskRepo.updatePriority(id, priority);
+
+    async execute(task: Task): Promise<void> {
+        await this.taskRepo.create(task);
     }
 }
-export class UpdateTaskStatus {
+
+
+export class GetTasksByUser {
     constructor(private taskRepo: TaskRepo) { }
 
-    async execute(id: string, state: string,): Promise<void> {
-        await this.taskRepo.updateState(id, state);
+    async execute(userId: string): Promise<Task[]> {
+        return await this.taskRepo.getTasksByUser(userId);
+    }
+
+
+
+
+
+
+
+
+
+}
+export class GetTaskById {
+    constructor(private taskRepo: TaskRepo) { }
+    async execute(id: string): Promise<Task | null> {
+        return await this.taskRepo.getById(id);
     }
 }
+
+export class UpdateTask {
+    constructor(private taskRepo: TaskRepo) { }
+    async execute(task: Task): Promise<void> {
+        await this.taskRepo.update(task);
+    }
+}
+
+export class DeleteTask {
+    constructor(private taskRepo: TaskRepo) { }
+    async execute(id: string): Promise<void> {
+        await this.taskRepo.delete(id);
+    }
+}
+
+
+
+

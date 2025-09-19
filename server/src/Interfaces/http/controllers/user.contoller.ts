@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { LoginUser } from "../../../Application/use-cases/User-usecases/LoginUser";
 import { RegistserUser } from "../../../Application/use-cases/User-usecases/RegisterUser";
-import { UserRepoPostgress } from "../../../Infrastructure/Repositories/Sql/PostgresLogic";
+import { UserRepoPostgress } from "../../../Infrastructure/Repositories/Sql/PostgresLogicUser";
 import pool from "../../../Config/db";
 import jwt from "jsonwebtoken";
 const userrepo = new UserRepoPostgress(pool);
@@ -13,10 +13,8 @@ export class UserController {
             if (!username || !password || !email) {
                 return res.status(400).json({ error: "All fields are required" });
             }
-
             const userRegister = new RegistserUser(userrepo);
             await userRegister.execute(email, password, username);
-
             res.status(201).json({ message: "User registered successfully" });
         } catch (err) {
             console.error(err);
