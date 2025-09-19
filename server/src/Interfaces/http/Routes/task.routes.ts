@@ -1,17 +1,18 @@
 import { Router } from 'express';
 //@ts-ignore
 import { TaskController } from '../controllers/Task.controller';
+import { authenticate } from '../middlewares/authMiddleware';
 
-const router = Router();
+const taskrouter = Router();
 
-router.get('/tasks/user/:userId', TaskController.getTasksByUser);
+taskrouter.get('/user/:userId', authenticate, TaskController.getTasksByUser);
 
-router.get('/tasks/:id', TaskController.getTaskById);
+taskrouter.get('/:id', authenticate, TaskController.getTaskById);
 
-router.post('/tasks', TaskController.createTask);
+taskrouter.post('/task', authenticate, TaskController.createTask);
 
-router.put('/tasks/:id', TaskController.updateTask);
+taskrouter.put('/tasks/:id', authenticate, TaskController.updateTask);
 
-router.delete('/tasks/:id', TaskController.deleteTask);
+taskrouter.delete('/tasks/:id', authenticate, TaskController.deleteTask);
 
-export default router;
+export default taskrouter;

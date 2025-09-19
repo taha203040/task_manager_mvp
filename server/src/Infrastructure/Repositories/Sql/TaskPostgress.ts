@@ -6,8 +6,8 @@ export class TaskRepoPostGress implements TaskRepo {
     }
     async create(task: Task): Promise<void> {
         await this.pool.query(
-            "INSERT INTO tasks (id, title, description, priority, due_date, status, project_id, created_at, updated_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-            [task.id, task.title, task.description, task.priority, task.due_date, task.status, task.project_id, task.created_at, task.updated_at, task.user_id]
+            "INSERT INTO tasks ( title, description, priority, due_date, status, project_id, created_at, updated_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+            [task.title, task.description, task.priority, task.due_date, task.status, task.project_id, task.created_at, task.updated_at, task.user_id]
         );
     }
     async getById(id: string, userId: string): Promise<Task | null> {

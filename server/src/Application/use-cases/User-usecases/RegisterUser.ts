@@ -7,7 +7,7 @@ export class RegistserUser {
     }
     async execute(email: string, password: string, username: string) {
         const existing = await this.userrepo.findByEmail(email)
-        if (!existing) {
+        if (existing) {
             throw new Error('User already Exists')
         }
         const hashed = await bcrypt.hash(password, 10)
@@ -16,7 +16,7 @@ export class RegistserUser {
             password: hashed,
             email: email,
             username: username,
-            role: 'hello'
+            role: 'admin'
         }
         await this.userrepo.create(user)
     }
