@@ -5,6 +5,7 @@ import userRouter from './Interfaces/http/Routes/user.routes';
 const app = express();
 import rateLimit from 'express-rate-limit';
 import taskrouter from './Interfaces/http/Routes/task.routes';
+import teamrouter from './Interfaces/http/Routes/Team.routes';
 
 const limmiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -14,9 +15,9 @@ const limmiter = rateLimit({
     legacyHeaders: false
 })
 app.use(express.json());
-app.use('/api/v1/tasks', taskrouter)
+app.use('/api/v1/tasks', taskrouter);
 app.use('/api/v1/users', userRouter);
-// app.use('/api/v1/files', filerouter);
+app.use('/api/v1/team/', teamrouter);
 
 async function startServer() {
     // await connectMongodb("mongodb://localhost:27017/", "mydb");

@@ -1,25 +1,25 @@
 export class Task {
     constructor(
-        public readonly id: string,
         public title: string,
         public description: string | null,
         public priority: TaskPriority = TaskPriority.MEDIUM,
         public due_date: Date | null = null,
         public status: TaskStatus = TaskStatus.TODO,
-        public project_id: string | null = null,
-        public readonly created_at: Date = new Date(),
-        public updated_at: Date = new Date(),
         public readonly user_id: string,
+        public project_id?: string,
+        public readonly id?: string,
+        public updated_at: Date = new Date(),
+        public readonly created_at: Date = new Date(),
     ) { }
-} 
+}
 
 export enum TaskStatus {
-    TODO = "TODO",               
-    IN_PROGRESS = "IN_PROGRESS",  
-    IN_REVIEW = "IN_REVIEW",      
-    COMPLETED = "COMPLETED",     
-    BLOCKED = "BLOCKED",          
-    CANCELED = "CANCELED",       
+    TODO = "TODO",
+    IN_PROGRESS = "IN_PROGRESS",
+    IN_REVIEW = "IN_REVIEW",
+    COMPLETED = "COMPLETED",
+    BLOCKED = "BLOCKED",
+    CANCELED = "CANCELED",
 }
 export enum UserRole {
     ADMIN = "ADMIN",       // مدير النظام: إدارة الفرق والمهام والمستخدمين

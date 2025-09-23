@@ -27,7 +27,6 @@ export class LoginUser {
         return {
             id: user.id,
             email: user.email,
-
         };
     }
 }

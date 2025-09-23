@@ -9,12 +9,12 @@ const userrepo = new UserRepoPostgress(pool);
 export class UserController {
     static async register(req: Request, res: Response) {
         try {
-            const { username, password, email } = req.body;
+            const { username, password, email, role } = req.body;
             if (!username || !password || !email) {
                 return res.status(400).json({ error: "All fields are required" });
             }
             const userRegister = new RegistserUser(userrepo);
-            await userRegister.execute(email, password, username);
+            await userRegister.execute(email, password, username, role);
             res.status(201).json({ message: "User registered successfully" });
         } catch (err) {
             console.error(err);
