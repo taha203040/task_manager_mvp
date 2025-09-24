@@ -7,3 +7,11 @@ export class Team {
     public readonly created_at?: Date | null,
   ) { }
 }
+export class TeamMember {
+  constructor(
+    public readonly team_id: string,
+    public readonly user_id: string,
+    public role: 'owner' | 'admin' | 'member' = 'member',
+    public readonly joined_at?: Date | null,
+  ) { }
+}
