@@ -15,17 +15,16 @@ export class TaskController {
             }
 
             const task: Task = new Task(
-                // id will be auto-generated in DB, so pass null or undefined here
-                null as any,
                 title,
                 description || null,
-                priority || TaskPriority.LOW,
+                priority || TaskPriority.MEDIUM,
                 due_date ? new Date(due_date) : null,
-                (status as TaskStatus) || TaskStatus.TODO, // ✅ valid enum only
+                (status as TaskStatus) || TaskStatus.TODO,
+                user_id,
                 projectId || null,
+                null as any,
                 new Date(),
-                new Date(),
-                user_id
+                new Date()
             );
 
             const createTaskUseCase = new CreateTask(taskrepo);
