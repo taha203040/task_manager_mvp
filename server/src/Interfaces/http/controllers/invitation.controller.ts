@@ -101,18 +101,29 @@ export class InvitationController {
         }
     }
 
-    // Accept an invitation
-    static async acceptInvite(req: Request, res: Response): Promise<void> {
+    // Update invitation status (accept / reject)
+    static async handleInviteResponse(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
+            const { action } = req.body; // expected: "accepted" | "rejected"
+
             if (!id) {
-                res.status(404).json({ msg: 'There is no user with this account' });
-                return
+                res.status(400).json({ error: "Invitation ID is required" });
+                return;
             }
-            const updatedInvite = await InvitationController.useCases.accept.execute(id);
+
+            if (!status || !["accepted", "rejected"].includes(status)) {
+                res.status(400).json({ error: "Invalid or missing status. Use 'accepted' or 'rejected'." });
+                return;
+            }
+
+            const updatedInvite =
+                action === "accept"
+                    ? await InvitationController.useCases.accept.execute(id)
+                    : await InvitationController.useCases.reject.execute(id);
 
             if (!updatedInvite) {
-                res.status(404).json({ error: 'Invite not found' });
+                res.status(404).json({ error: "Invite not found" });
                 return;
             }
 
@@ -121,35 +132,11 @@ export class InvitationController {
             if (error instanceof Error) {
                 res.status(400).json({ error: error.message });
             } else {
-                res.status(500).json({ error: 'Internal server error' });
+                res.status(500).json({ error: "Internal server error" });
             }
         }
     }
 
-    // Reject an invitation
-    static async rejectInvite(req: Request, res: Response): Promise<void> {
-        try {
-            const { id } = req.params;
-            if (!id) {
-                res.status(404).json({ msg: 'There is no user with this account' });
-                return
-            }
-            const updatedInvite = await InvitationController.useCases.reject.execute(id);
-
-            if (!updatedInvite) {
-                res.status(404).json({ error: 'Invite not found' });
-                return;
-            }
-
-            res.status(200).json(updatedInvite);
-        } catch (error) {
-            if (error instanceof Error) {
-                res.status(400).json({ error: error.message });
-            } else {
-                res.status(500).json({ error: 'Internal server error' });
-            }
-        }
-    }
 
     // Delete an invitation
     static async deleteInvite(req: Request, res: Response): Promise<void> {
