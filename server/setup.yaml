@@ -12,28 +12,39 @@ jobs:
 
     strategy:
       matrix:
+        # Test against the latest LTS version of Node.js
         node-version: [18.x]
 
     steps:
+    # Checkout the repository code
     - uses: actions/checkout@v4
 
+    # Set up Node.js with the specified version and enable npm caching
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
+    # Install dependencies using npm ci for reproducible builds
     - name: Install dependencies
       run: npm ci
 
+    # Build the TypeScript project if a build script exists
     - name: Build TypeScript
       run: npm run build --if-present
 
+    # Run the test suite if tests are configured
     - name: Run tests
       run: npm test --if-present
 
+    # Start the server and verify it responds to health checks
     - name: Start server and test
       run: |
+        # Start the server in the background
         npm start &
+        # Wait for the server to start up
         sleep 10
+        # Test the health endpoint to verify the server is running correctly
         curl -f http://localhost:4000/health || exit 1
+```
