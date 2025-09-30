@@ -9,10 +9,10 @@ taskrouter.get('/user/:userId', authenticate, TaskController.getTasksByUser);
 
 taskrouter.get('/:id', authenticate, TaskController.getTaskById);
 
-taskrouter.post('/task', authenticate, TaskController.createTask);
+taskrouter.post('/', authenticate, TaskController.createTask);
 
-taskrouter.put('/tasks/:id', authenticate, TaskController.updateTask);
+taskrouter.put('/:id', authenticate, TaskController.updateTask);
 
-taskrouter.delete('/tasks/:id', authenticate, TaskController.deleteTask);
+taskrouter.delete('/:id', authenticate, TaskController.deleteTask);
 
 export default taskrouter;

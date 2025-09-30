@@ -2,6 +2,8 @@ import express, { type Request, type Response } from 'express';
 import { connectMongodb, getDb } from './Infrastructure/Repositories/mongoDb/mongoClient';
 import userRouter from './Interfaces/http/Routes/user.routes';
 // import filerouter from './Interfaces/http/Routes/file.routes';
+import inviteRouter from './Interfaces/http/Routes/Invites.routes';
+
 const app = express();
 import rateLimit from 'express-rate-limit';
 import taskrouter from './Interfaces/http/Routes/task.routes';
@@ -17,8 +19,8 @@ const limmiter = rateLimit({
 app.use(express.json());
 app.use('/api/v1/tasks', taskrouter);
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/team/', teamrouter);
-
+app.use('/api/v1/teams/', teamrouter);
+app.use('/api/v1/invites/')
 async function startServer() {
     // await connectMongodb("mongodb://localhost:27017/", "mydb");
     app.listen(3000, () => console.log('Server running on port 3000'));
