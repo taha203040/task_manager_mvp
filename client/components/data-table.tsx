@@ -492,7 +492,7 @@ export function DataTable({
             </DropdownMenuContent>
           </DropdownMenu>
           {/* <Button variant="outline" size="sm"> */}
-          <IconPlus />
+          {/* <IconPlus /> */}
           {/* <span className="hidden lg:inline">Create Task</span> */}
           <Dialog>
             <DialogTrigger asChild>

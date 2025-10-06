@@ -20,7 +20,7 @@ app.use(express.json());
 app.use('/api/v1/tasks', taskrouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/teams/', teamrouter);
-app.use('/api/v1/invites/')
+app.use('/api/v1/invites/',inviteRouter) 
 async function startServer() {
     // await connectMongodb("mongodb://localhost:27017/", "mydb");
     app.listen(3000, () => console.log('Server running on port 3000'));
