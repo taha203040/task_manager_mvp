@@ -41,6 +41,12 @@ export class UserController {
                 user: { id: user.id, email: user.email }
                 , token
             });
+            res.cookie("token", token, {
+                httpOnly: true, // ❌ لا يمكن الوصول إليها من JavaScript
+                secure: true,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
+                sameSite: "strict",
+                maxAge: 60 * 60 * 1000, // ساعة واحدة
+            });
         } catch (error) {
             console.error(error);
             res.status(500).json({ success: false, message: "Server error" });

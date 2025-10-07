@@ -3,12 +3,12 @@ import { connectMongodb, getDb } from './Infrastructure/Repositories/mongoDb/mon
 import userRouter from './Interfaces/http/Routes/user.routes';
 // import filerouter from './Interfaces/http/Routes/file.routes';
 import inviteRouter from './Interfaces/http/Routes/Invites.routes';
-
-const app = express();
 import rateLimit from 'express-rate-limit';
 import taskrouter from './Interfaces/http/Routes/task.routes';
 import teamrouter from './Interfaces/http/Routes/Team.routes';
-
+import cors from "cors";
+import cookieParser from 'cookie-parser'
+const app = express();
 const limmiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -17,13 +17,16 @@ const limmiter = rateLimit({
     legacyHeaders: false
 })
 app.use(express.json());
+app.use(cors());
+app.use(cookieParser())
 app.use('/api/v1/tasks', taskrouter);
-app.use('/api/v1/users', userRouter);
+app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/teams/', teamrouter);
-app.use('/api/v1/invites/',inviteRouter) 
+app.use('/api/v1/invites/', inviteRouter)
+const port = 4000
 async function startServer() {
     // await connectMongodb("mongodb://localhost:27017/", "mydb");
-    app.listen(3000, () => console.log('Server running on port 3000'));
+    app.listen(4000, () => console.log(`Server running on port ${port}`));
 }
 
 startServer().catch(err => {
@@ -35,4 +38,4 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/users', userRouter);
 
 
-app.listen(4000, () => console.log('Server running'));
+app.listen(port, () => console.log('Server running'));

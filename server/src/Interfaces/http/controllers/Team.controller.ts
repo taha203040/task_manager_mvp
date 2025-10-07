@@ -44,7 +44,9 @@ export class TeamController {
 
     static async getTeamById(req: Request, res: Response) {
         try {
-            const { id, userId } = req.params;
+            const { id } = req.params;
+            // @ts-ignore
+            const { userId } = req.user
             if (!id || !userId) {
                 return res.status(400).json({ error: "Team id and userId are required" });
             }

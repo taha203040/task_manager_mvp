@@ -8,8 +8,9 @@ const taskrepo = new TaskRepoPostGress(pool);
 export class TaskController {
     static async createTask(req: Request, res: Response) {
         try {
-            const { title, description, status, user_id, projectId, priority, due_date } = req.body;
-
+            const { title, description, status, projectId, priority, due_date } = req.body;
+            //@ts-ignore
+            const { user_id } = req.user
             if (!title || !user_id) {
                 return res.status(400).json({ error: "Title and userId are required" });
             }
