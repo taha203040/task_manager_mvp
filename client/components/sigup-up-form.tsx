@@ -1,6 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -18,35 +19,49 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { api } from "@/lib/axios";
-import { Spinner } from "@/components/ui/spinner"
-
+import { Spinner } from "@/components/ui/spinner";
 import { useMutation } from "@tanstack/react-query";
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
-
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: "admin",
+  });
+  const router = useRouter();
   const registerUser = useMutation({
     mutationFn: async () => {
       const res = await api.post("/users/register", form);
       return res.data;
     },
-    onSuccess: () => alert("✅ Registered successfully"),
-    onError: (err: any) => alert("❌ " + err.response?.data?.message),
+    onSuccess: (data) => {
+      alert("✅ Registered successfully");
+      console.log("User:", data.user);
+      router.push('/login')
+    },
+    onError: (err: any) => {
+      alert("❌ " + err || "Unexpected error");
+    },
   });
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
+          <CardTitle className="text-xl">Welcome to Tasky</CardTitle>
           <CardDescription>
             Sign up with your Apple or Google account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              registerUser.mutate();
+            }}
+          >
             <FieldGroup>
               <Field>
                 <Button variant="outline" type="button">
@@ -106,10 +121,10 @@ export function LoginForm({
               <Field>
                 <Button type="submit" disabled={registerUser.isPending}>
                   {" "}
-                  {registerUser.isPending ? <Spinner />: "Sign up"}
+                  {registerUser.isPending ? <Spinner /> : "Sign up"}
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#signup">Sign up</a>
+                  Do have account? <a href="#signup">Sign in</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

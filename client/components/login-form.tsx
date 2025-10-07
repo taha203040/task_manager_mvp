@@ -1,3 +1,4 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,22 +19,32 @@ import { Input } from "@/components/ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "@/lib/axios";
+import { useRouter } from "next/navigation";
+import { Spinner } from "./ui/spinner";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [form, setForm] = useState({ email: "", password: "" });
-
+  const router = useRouter();
   const registerUser = useMutation({
     mutationFn: async () => {
-      const res = await api.post("/users/register", form);
+      const res = await api.post("/users/signin", form);
       return res.data;
     },
-    onSuccess: () => alert("✅ Registered successfully"),
+    onSuccess: () => {
+      router.push("/");
+      alert("✅ Registered successfully");
+    },
     onError: (err: any) => alert("❌ " + err.response?.data?.message),
   });
+  // const data = await res.json();
 
+  // if (res.ok) {
+  //   localStorage.setItem("token", data.token); // ← هنا فقط
+  //   alert("Login successful");
+  // }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -44,7 +55,12 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              registerUser.mutate();
+            }}
+          >
             <FieldGroup>
               <Field>
                 <Button variant="outline" type="button">
@@ -99,9 +115,12 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit">
+                  {" "}
+                  {registerUser.isPending ? <Spinner /> : "Sign in"}
+                </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <a href="/signup">Sign up</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
