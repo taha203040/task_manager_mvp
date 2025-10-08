@@ -1,6 +1,7 @@
 import express, { type Request, type Response } from 'express';
-import { connectMongodb, getDb } from './Infrastructure/Repositories/mongoDb/mongoClient';
+// import { connectMongodb, getDb } from './Infrastructure/Repositories/mongoDb/mongoClient';
 import userRouter from './Interfaces/http/Routes/user.routes';
+import authrouter from './Interfaces/http/Routes/auth.routes';
 // import filerouter from './Interfaces/http/Routes/file.routes';
 import inviteRouter from './Interfaces/http/Routes/Invites.routes';
 import rateLimit from 'express-rate-limit';
@@ -19,23 +20,15 @@ const limmiter = rateLimit({
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser())
+app.use('/api/v1/auth/', authrouter)
 app.use('/api/v1/tasks', taskrouter);
 app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)
 const port = 4000
-async function startServer() {
-    // await connectMongodb("mongodb://localhost:27017/", "mydb");
-    app.listen(4000, () => console.log(`Server running on port ${port}`));
-}
-
-startServer().catch(err => {
-    console.error("Failed to start server:", err);
-});
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World');
 });
-app.use('/users', userRouter);
 
 
 app.listen(port, () => console.log('Server running'));

@@ -5,6 +5,7 @@
     "allowSyntheticDefaultImports": true,
     // File Layout
     "rootDir": "./src",
+    "typeRoots": ["./types", "./node_modules/@types"],
     // "outDir": "./dist",
 
     // Environment Settings
@@ -14,7 +15,7 @@
     // "types": [],
     // For nodejs:
     // "lib": ["esnext"],
-    "types": ["node" , "jest"],
+    "types": ["node", "jest"],
     // and npm install -D @types/node
 
     // Other Outputs
