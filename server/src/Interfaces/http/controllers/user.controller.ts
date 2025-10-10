@@ -35,7 +35,7 @@ export class UserController {
             if (!user) {
                 return res.status(401).json({ error: "Invalid credentials" });
             }
-            const token = jwt.sign({ email: email }, 'hellofromahemd', { expiresIn: '1h' });
+            const token = jwt.sign({ email: email, username: user.username }, 'hellofromahemd', { expiresIn: '1h' });
             res.cookie("token", token, {
                 httpOnly: true, // ❌ لا يمكن الوصول إليها من JavaScript
                 secure: true,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
@@ -49,8 +49,7 @@ export class UserController {
             });
         } catch (error) {
             console.error(error);
-            const ress = res.status(500).json({ success: false, message: "Server error" });
-            console.log(ress)
+            res.status(500).json({ success: false, message: "Server error" });
         }
     }
 }
