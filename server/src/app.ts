@@ -18,10 +18,10 @@ const limmiter = rateLimit({
     legacyHeaders: false
 })
 app.use(express.json());
-app.use(cors());
 app.use(cookieParser())
+app.use(cors());
 app.use('/api/v1/auth/', authrouter)
-app.use('/api/v1/tasks', taskrouter);
+app.use('/api/v1/tasks/', taskrouter);
 app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)

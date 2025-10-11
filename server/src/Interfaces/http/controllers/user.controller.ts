@@ -35,16 +35,17 @@ export class UserController {
             if (!user) {
                 return res.status(401).json({ error: "Invalid credentials" });
             }
-            const token = jwt.sign({ email: email, username: user.username }, 'hellofromahemd', { expiresIn: '1h' });
+            const token = jwt.sign({ email: email, username: user.username, user_id: user.id }, 'hellofromahemd', { expiresIn: '1h' });
             res.cookie("token", token, {
                 httpOnly: true, // ❌ لا يمكن الوصول إليها من JavaScript
                 secure: true,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
-                sameSite: "strict",
-                maxAge: 60 * 60 * 1000, // ساعة واحدة
+                sameSite: "lax",
+                maxAge: 60 * 60 * 1000, // ساعة واحدة 
             });
+            console.log(user.id)
             res.status(200).json({
                 message: "Login successful",
-                user: { id: user.id, email: user.email }
+                user: { user_id: user.id, email: user.email }
                 , token
             });
         } catch (error) {

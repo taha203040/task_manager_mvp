@@ -137,7 +137,8 @@ export const schema = z.object({
   limit: z.string(),
   reviewer: z.string(),
 });
-
+import { useEffect, useState } from "react";
+import { api } from "@/lib/axios";
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
@@ -423,6 +424,45 @@ export function DataTable({
     }
   }
 
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    priority: "",
+    due_date: new Date(),
+    status: TaskStatus.TODO,
+    user_id: "",
+    id: crypto.randomUUID(),
+    project_id: "123456",
+    created_at: new Date(),
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      // 🔹 أولاً: اجلب بيانات المستخدم (من الكوكيز)
+      const ress = await api.get("/users/info", { withCredentials: true });
+
+      if (ress.status === 200) {
+        console.log("form done");
+        console.log("data", ress.data.user_id);
+        // 🔹 ثانياً: ضع user_id داخل الحالة
+        const updatedForm = { ...form, user_id: ress.data.user_id };
+        // 🔹 ثالثاً: أرسل الطلب لإنشاء المهمة
+        console.log("form done");
+        console.log(updatedForm);
+
+        const res = await api.post("/tasks/create", updatedForm, {
+          withCredentials: true,
+        });
+
+        console.log("✅ Task created:", res.data);
+      }
+    } catch (error) {
+      console.error("❌ Failed to create task:", error);
+    }
+  };
+
   return (
     <Tabs
       defaultValue="outline"
@@ -503,91 +543,101 @@ export function DataTable({
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Task</DialogTitle>
-                <DialogDescription>
-                  Fill in the details to create a new task
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="task-header">Task Name</Label>
-                  <Input id="task-header" placeholder="Enter task name" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              <form id="form" onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Create New Task</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details to create a new task
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="task-type">Type</Label>
-                    <Select>
-                      <SelectTrigger id="task-type">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={TaskType.FEATURE}>
-                          Feature
-                        </SelectItem>
-                        <SelectItem value={TaskType.BUG}>Bug</SelectItem>
-                        <SelectItem value={TaskType.IMPROVEMENT}>
-                          Improvement
-                        </SelectItem>
-                        <SelectItem value={TaskType.RESEARCH}>
-                          Research
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="task-header">Task Name</Label>
+                    <Input
+                      id="task-header"
+                      onChange={(e) =>
+                        setForm({ ...form, title: e.target.value })
+                      }
+                      placeholder="Enter task name"
+                    />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="task-status">Status</Label>
-                    <Select>
-                      <SelectTrigger id="task-status">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
-                        <SelectItem value={TaskStatus.IN_PROGRESS}>
-                          In Progress
-                        </SelectItem>
-                        <SelectItem value={TaskStatus.IN_REVIEW}>
-                          In Review
-                        </SelectItem>
-                        <SelectItem value={TaskStatus.COMPLETED}>
-                          Completed
-                        </SelectItem>
-                        <SelectItem value={TaskStatus.BLOCKED}>
-                          Blocked
-                        </SelectItem>
-                        <SelectItem value={TaskStatus.CANCELED}>
-                          Canceled
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="task-header">Describtion</Label>
+                    <Input
+                      id="task-b"
+                      placeholder="Enter task name"
+                      type="text"
+                      onChange={(e) =>
+                        setForm({ ...form, description: e.target.value })
+                      }
+                    />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="task-priority">Priority</Label>
-                    <Select>
-                      <SelectTrigger id="task-priority">
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={TaskPriority.LOW}>Low</SelectItem>
-                        <SelectItem value={TaskPriority.MEDIUM}>
-                          Medium
-                        </SelectItem>
-                        <SelectItem value={TaskPriority.HIGH}>High</SelectItem>
-                        <SelectItem value={TaskPriority.CRITICAL}>
-                          Critical
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="task-status">Status</Label>
+                      <Select
+                        value={form.status}
+                        onValueChange={(value: TaskStatus) =>
+                          setForm({ ...form, status: value })
+                        }
+                      >
+                        <SelectTrigger id="task-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
+                          <SelectItem value={TaskStatus.IN_PROGRESS}>
+                            In Progress
+                          </SelectItem>
+                          <SelectItem value={TaskStatus.IN_REVIEW}>
+                            In Review
+                          </SelectItem>
+                          <SelectItem value={TaskStatus.COMPLETED}>
+                            Completed
+                          </SelectItem>
+                          <SelectItem value={TaskStatus.BLOCKED}>
+                            Blocked
+                          </SelectItem>
+                          <SelectItem value={TaskStatus.CANCELED}>
+                            Canceled
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="task-reviewer">Reviewer</Label>
-                    <Select>
-                      <SelectTrigger id="task-reviewer">
-                        <SelectValue placeholder="Assign reviewer" />
-                      </SelectTrigger>
-                      <SelectContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="task-priority">Priority</Label>
+                      <Select
+                        value={form.status}
+                        onValueChange={(value: TaskPriority) =>
+                          setForm({ ...form, priority: value })
+                        }
+                      >
+                        <SelectTrigger id="task-priority">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={TaskPriority.LOW}>Low</SelectItem>
+                          <SelectItem value={TaskPriority.MEDIUM}>
+                            Medium
+                          </SelectItem>
+                          <SelectItem value={TaskPriority.HIGH}>
+                            High
+                          </SelectItem>
+                          <SelectItem value={TaskPriority.CRITICAL}>
+                            Critical
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="task-reviewer">Reviewer</Label>
+                      <Select >
+                        <SelectTrigger id="task-reviewer">
+                          <SelectValue placeholder="Assign reviewer" />
+                        </SelectTrigger>
+                        {/* <SelectContent>
                         <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
                         <SelectItem value="Jamik Tashpulatov">
                           Jamik Tashpulatov
@@ -595,11 +645,11 @@ export function DataTable({
                         <SelectItem value="Emily Whalen">
                           Emily Whalen
                         </SelectItem>
-                      </SelectContent>
-                    </Select>
+                      </SelectContent> */}
+                      </Select>
+                    </div>
                   </div>
-                </div>
-                {/* <div className="grid grid-cols-2 gap-4">
+                  {/* <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="task-target">Target</Label>
                     <Input id="task-target" placeholder="Enter target" />
@@ -609,11 +659,12 @@ export function DataTable({
                     <Input id="task-limit" placeholder="Enter limit" />
                   </div>
                 </div> */}
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline">Cancel</Button>
-                <Button>Create Task</Button>
-              </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline">Cancel</Button>
+                  <Button type="submit">Create Task</Button>
+                </div>
+              </form>
             </DialogContent>
           </Dialog>
           {/* </Button> */}

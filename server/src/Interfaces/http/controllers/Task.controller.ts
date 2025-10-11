@@ -8,9 +8,9 @@ const taskrepo = new TaskRepoPostGress(pool);
 export class TaskController {
     static async createTask(req: Request, res: Response) {
         try {
-            const { title, description, status, projectId, priority, due_date } = req.body;
+            const { title, description, status, project_id, priority, due_date,  }= req.body;
             //@ts-ignore
-            const { user_id } = req.user
+            const { user_id } = req.user?.user_id
             if (!title || !user_id) {
                 return res.status(400).json({ error: "Title and userId are required" });
             }
@@ -22,15 +22,12 @@ export class TaskController {
                 due_date ? new Date(due_date) : null,
                 (status as TaskStatus) || TaskStatus.TODO,
                 user_id,
-                projectId || null,
-                null as any,
+                project_id || null,
+                crypto.randomUUID(),
                 new Date(),
-                new Date()
             );
-
             const createTaskUseCase = new CreateTask(taskrepo);
             await createTaskUseCase.execute(task);
-
             res.status(201).json({ message: "Task created successfully" });
         } catch (err) {
             console.error(err);

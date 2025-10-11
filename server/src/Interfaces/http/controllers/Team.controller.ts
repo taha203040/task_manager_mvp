@@ -46,12 +46,12 @@ export class TeamController {
         try {
             const { id } = req.params;
             // @ts-ignore
-            const { userId } = req.user
-            if (!id || !userId) {
+            const { user_id } = req.user
+            if (!id || !user_id) {
                 return res.status(400).json({ error: "Team id and userId are required" });
             }
             const teamUseCase = new GetTeamById(teamRepo);
-            const team = await teamUseCase.execute(id, userId);
+            const team = await teamUseCase.execute(id, user_id);
             if (!team) {
                 return res.status(404).json({ error: "Team not found" });
             }

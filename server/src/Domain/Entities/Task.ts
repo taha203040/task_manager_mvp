@@ -8,8 +8,8 @@ export class Task {
         public readonly user_id: string,
         public project_id?: string,
         public readonly id?: string,
-        public updated_at: Date = new Date(),
         public readonly created_at: Date = new Date(),
+        // public updated_at: Date = new Date(),
     ) { }
 }
 
