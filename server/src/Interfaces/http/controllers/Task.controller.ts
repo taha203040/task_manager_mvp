@@ -8,13 +8,19 @@ const taskrepo = new TaskRepoPostGress(pool);
 export class TaskController {
     static async createTask(req: Request, res: Response) {
         try {
-            const { title, description, status, project_id, priority, due_date,  }= req.body;
+            const { title, description, status, project_id, priority, due_date, } = req.body;
             //@ts-ignore
-            const { user_id } = req.user?.user_id
-            if (!title || !user_id) {
-                return res.status(400).json({ error: "Title and userId are required" });
-            }
+            const user_id = req.user?.user_id || null
+            //@ts-ignore
+            console.log('ussr id', user_id)
+            // console.log('title :', title)
 
+            if (!user_id) {
+                return res.status(400).json({ error: "  userId  required" });
+            }
+            if (!title) {
+                return res.status(400).json({ error: "Title  required" });
+            }
             const task: Task = new Task(
                 title,
                 description || null,
@@ -31,6 +37,8 @@ export class TaskController {
             res.status(201).json({ message: "Task created successfully" });
         } catch (err) {
             console.error(err);
+            console.log(err);
+
             res.status(500).json({ error: "Server error" });
         }
     }
@@ -55,14 +63,15 @@ export class TaskController {
 
     static async getTaskById(req: Request, res: Response) {
         try {
-            const { id, userId } = req.params;
-
-            if (!id || !userId) {
+            const { id } = req.params;
+            //@ts-ignore
+            const { user_id } = req.user
+            if (!id || !user_id) {
                 return res.status(400).json({ error: "Task ID is required" });
             }
 
             const getTaskUseCase = new GetTaskById(taskrepo);
-            const task = await getTaskUseCase.execute(id, userId);
+            const task = await getTaskUseCase.execute(id, user_id);
 
             if (!task) {
                 return res.status(404).json({ error: "Task not found" });

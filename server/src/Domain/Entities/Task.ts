@@ -9,7 +9,7 @@ export class Task {
         public project_id?: string,
         public readonly id?: string,
         public readonly created_at: Date = new Date(),
-        // public updated_at: Date = new Date(),
+        public updated_at: Date = new Date(),
     ) { }
 }
 

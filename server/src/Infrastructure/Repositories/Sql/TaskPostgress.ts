@@ -6,8 +6,8 @@ export class TaskRepoPostGress implements TaskRepo {
     }
     async create(task: Task): Promise<void> {
         await this.pool.query(
-            "INSERT INTO tasks ( title, description, priority, due_date, status, project_id, created_at, updated_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-            [task.title, task.description, task.priority, task.due_date, task.status, task.project_id, task.created_at,  task.user_id]
+            "INSERT INTO tasks ( title, description, priority, due_date, status, project_id,updated_at , created_at , user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8 , $9 )",
+            [task.title, task.description, task.priority, task.due_date, task.status, task.project_id, task.updated_at, task.created_at, task.user_id]
         );
     }
     async getById(id: string, userId: string): Promise<Task | null> {
@@ -33,7 +33,7 @@ export class TaskRepoPostGress implements TaskRepo {
     async update(task: Task, userId: string): Promise<void> {
         await this.pool.query(
             "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5, project_id = $6,  WHERE id = $7 AND user_id = $8",
-            [task.title, task.description, task.priority, task.due_date, task.status, task.project_id,  task.id, userId]
+            [task.title, task.description, task.priority, task.due_date, task.status, task.project_id, task.id, userId]
         );
     }
 

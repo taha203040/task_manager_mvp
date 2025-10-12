@@ -3,7 +3,9 @@ import { Request, Response, NextFunction } from "express";
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies.token; // get token from cookie 
+        // const token = req.cookies.token; // get token from cookie 
+        const token = req.cookies.token // get token from cookie or authorization header
+
         if (!token) {
             return res.status(401).json({ error: "Unauthorized" });
         }
@@ -16,6 +18,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
         req.user = decoded as any
         //@ts-ignore
         console.log(req.user)
+        console.log('auth done')
         next(); // Proceed to the next middleware or route handler
     } catch (err) {
         console.error(err);

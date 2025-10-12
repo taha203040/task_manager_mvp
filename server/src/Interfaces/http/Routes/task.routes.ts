@@ -9,7 +9,7 @@ taskrouter.get('/user/:userId', authenticate, TaskController.getTasksByUser);
 
 taskrouter.get('/:id', authenticate, TaskController.getTaskById);
 
-taskrouter.post('/create', authenticate, TaskController.createTask);
+taskrouter.post('/task', authenticate, TaskController.createTask);
 
 taskrouter.put('/:id', authenticate, TaskController.updateTask);
 

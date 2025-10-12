@@ -20,12 +20,12 @@ import {
   type UniqueIdentifier,
 } from "@dnd-kit/core";
 export enum TaskStatus {
-  TODO = "TODO", // لم يبدأ العمل عليها بعد
-  IN_PROGRESS = "IN_PROGRESS", // جاري العمل عليها
-  IN_REVIEW = "IN_REVIEW", // بانتظار مراجعة المدير أو الفريق
-  COMPLETED = "COMPLETED", // تم إنجاز المهمة
-  BLOCKED = "BLOCKED", // متوقفة بسبب عائق
-  CANCELED = "CANCELED", // تم إلغاؤها
+  TODO = "todo", // لم يبدأ العمل عليها بعد
+  IN_PROGRESS = "in_progress", // جاري العمل عليها
+  IN_REVIEW = "in_review", // بانتظار مراجعة المدير أو الفريق
+  COMPLETED = "completed", // تم إنجاز المهمة
+  BLOCKED = "blocked", // متوقفة بسبب عائق
+  CANCELED = "canceled", // تم إلغاؤها
 }
 export enum TaskType {
   FEATURE = "FEATURE", // إضافة ميزة جديدة
@@ -34,9 +34,9 @@ export enum TaskType {
   RESEARCH = "RESEARCH", // دراسة أو بحث
 }
 export enum TaskPriority {
-  LOW = "LOW", // أولوية منخفضة
-  MEDIUM = "MEDIUM", // أولوية متوسطة
-  HIGH = "HIGH", // أولوية مرتفعة
+  LOW = "low", // أولوية منخفضة
+  MEDIUM = "meduim", // أولوية متوسطة
+  HIGH = "high", // أولوية مرتفعة
   CRITICAL = "CRITICAL", // مهمة عاجلة جدًا
 }
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
@@ -139,6 +139,8 @@ export const schema = z.object({
 });
 import { useEffect, useState } from "react";
 import { api } from "@/lib/axios";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
@@ -430,39 +432,58 @@ export function DataTable({
     priority: "",
     due_date: new Date(),
     status: TaskStatus.TODO,
-    user_id: "",
     id: crypto.randomUUID(),
-    project_id: "123456",
+    project_id: "e5b3f87a-9a33-4b3c-99b2-ef2132d5f1a7",
     created_at: new Date(),
   });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // const router = useRouter();
+  const handleSubmit = async (e: React.FormEvent) => {
+    // e.preventDefault();
 
     try {
       // 🔹 أولاً: اجلب بيانات المستخدم (من الكوكيز)
+      // const ress = await api.get("/users/info", { withCredentials: true });
+      // if (ress.status === 200) {
+      //   console.log("form done");
+      //   console.log("data", ress.data.user_id);
+      //   // 🔹 ثانياً: ضع user_id داخل الحالة
+      //   // 🔹 ثالثاً: أرسل الطلب لإنشاء المهمة
+      //   console.log("form done");
+      //   const res = await api.post("/tasks/create", form, {
+      //     withCredentials: true,
+      //   });
+      //   console.log("✅ Task created:", res.data);
+      //   return res.data;
+      // }
+    } catch (error) {
+      console.log(error);
+      console.error("❌ Failed to create task:", error);
+    }
+  };
+  const submit = useMutation({
+    mutationFn: async () => {
       const ress = await api.get("/users/info", { withCredentials: true });
 
       if (ress.status === 200) {
         console.log("form done");
-        console.log("data", ress.data.user_id);
+        // console.log("data", ress.data.user_id);
         // 🔹 ثانياً: ضع user_id داخل الحالة
-        const updatedForm = { ...form, user_id: ress.data.user_id };
         // 🔹 ثالثاً: أرسل الطلب لإنشاء المهمة
         console.log("form done");
-        console.log(updatedForm);
 
-        const res = await api.post("/tasks/create", updatedForm, {
+     
+        const ress = await api.post("/tasks/task", form, {
           withCredentials: true,
         });
-
-        console.log("✅ Task created:", res.data);
-      }
-    } catch (error) {
-      console.error("❌ Failed to create task:", error);
-    }
-  };
-
+        return ress.data;
+      } 
+    },
+    onSuccess: () => {
+      console.log();
+      alert("✅ created successfully");
+    },
+    onError: (err: any) => alert("❌ " + err.response),
+  });
   return (
     <Tabs
       defaultValue="outline"
@@ -543,7 +564,13 @@ export function DataTable({
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <form id="form" onSubmit={handleSubmit}>
+              <form
+                id="form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  submit.mutate();
+                }}
+              >
                 <DialogHeader>
                   <DialogTitle>Create New Task</DialogTitle>
                   <DialogDescription>
@@ -633,7 +660,7 @@ export function DataTable({
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="task-reviewer">Reviewer</Label>
-                      <Select >
+                      <Select>
                         <SelectTrigger id="task-reviewer">
                           <SelectValue placeholder="Assign reviewer" />
                         </SelectTrigger>
