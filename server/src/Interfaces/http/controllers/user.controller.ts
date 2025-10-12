@@ -39,7 +39,7 @@ export class UserController {
             res.cookie("token", token, {
                 httpOnly: true, // ❌ لا يمكن الوصول إليها من JavaScript
                 secure: true,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
-                sameSite: "lax",
+                sameSite: "strict",
                 maxAge: 60 * 60 * 1000, // ساعة واحدة 
             });
             console.log(user.id)
