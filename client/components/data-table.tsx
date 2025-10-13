@@ -19,26 +19,7 @@ import {
   type DragEndEvent,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
-export enum TaskStatus {
-  TODO = "todo", // لم يبدأ العمل عليها بعد
-  IN_PROGRESS = "in_progress", // جاري العمل عليها
-  IN_REVIEW = "in_review", // بانتظار مراجعة المدير أو الفريق
-  COMPLETED = "completed", // تم إنجاز المهمة
-  BLOCKED = "blocked", // متوقفة بسبب عائق
-  CANCELED = "canceled", // تم إلغاؤها
-}
-export enum TaskType {
-  FEATURE = "FEATURE", // إضافة ميزة جديدة
-  BUG = "BUG", // إصلاح خطأ
-  IMPROVEMENT = "IMPROVEMENT", // تحسين نظام موجود
-  RESEARCH = "RESEARCH", // دراسة أو بحث
-}
-export enum TaskPriority {
-  LOW = "low", // أولوية منخفضة
-  MEDIUM = "meduim", // أولوية متوسطة
-  HIGH = "high", // أولوية مرتفعة
-  CRITICAL = "CRITICAL", // مهمة عاجلة جدًا
-}
+
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
@@ -141,6 +122,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { TaskPriority, TaskStatus } from "@/utils/enums";
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
