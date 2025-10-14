@@ -5,7 +5,7 @@ import { authenticate } from '../middlewares/authMiddleware';
 
 const taskrouter = Router();
 
-taskrouter.get('/user/:userId', authenticate, TaskController.getTasksByUser);
+taskrouter.get('/', authenticate, TaskController.getTasksByUser);
 
 taskrouter.get('/:id', authenticate, TaskController.getTaskById);
 

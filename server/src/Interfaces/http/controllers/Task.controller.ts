@@ -45,14 +45,15 @@ export class TaskController {
 
     static async getTasksByUser(req: Request, res: Response) {
         try {
-            const { userId } = req.params;
+            //@ts-ignore
+            const user_id = req.user?.user_id || null
 
-            if (!userId) {
+            if (!user_id) {
                 return res.status(400).json({ error: "User ID is required" });
             }
 
             const getTasksUseCase = new GetTasksByUser(taskrepo);
-            const tasks = await getTasksUseCase.execute(userId);
+            const tasks = await getTasksUseCase.execute(user_id);
 
             res.status(200).json({ tasks });
         } catch (err) {

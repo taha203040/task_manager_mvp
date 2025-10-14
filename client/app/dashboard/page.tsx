@@ -1,16 +1,35 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-import data from "./data.json"
+import data from "./data.json";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/axios";
 
 export default function Page() {
+  const router = useRouter();
+  // const [data, setData] = useState([]);
+  useEffect(() => {
+    const handleData = async () => {
+      try {
+        const data = await api.get("/", {
+          withCredentials: true,
+        });
+        if (data.status === 200) {
+          // setData(data.data);
+          return data.data;
+        }
+      } catch (err) {
+        console.log;
+      }
+    };
+    handleData();
+  }, [router]);
+
   return (
     <SidebarProvider
       style={
@@ -36,5 +55,5 @@ export default function Page() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

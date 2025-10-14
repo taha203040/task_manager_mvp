@@ -29,13 +29,17 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  IconAlertTriangle,
+  IconBan,
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
   IconCircleCheckFilled,
+  IconClock,
   IconDotsVertical,
+  IconEye,
   IconGripVertical,
   IconLayoutColumns,
   IconLoader,
@@ -118,10 +122,9 @@ export const schema = z.object({
   limit: z.string(),
   reviewer: z.string(),
 });
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { TaskPriority, TaskStatus } from "@/utils/enums";
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
@@ -197,16 +200,65 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-1.5">
-        {row.original.status === "Done" ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-        ) : (
-          <IconLoader />
-        )}
-        {row.original.status}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const status = row.original.status as TaskStatus;
+
+      const getStatusStyle = () => {
+        switch (status) {
+          case TaskStatus.COMPLETED:
+            return {
+              icon: (
+                <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+              ),
+              className: "border-green-500 text-green-700 dark:text-green-400",
+            };
+          case TaskStatus.IN_PROGRESS:
+            return {
+              icon: <IconLoader className="animate-spin text-blue-500" />,
+              className: "border-blue-500 text-blue-600 dark:text-blue-400",
+            };
+          case TaskStatus.IN_REVIEW:
+            return {
+              icon: <IconEye className="text-purple-500" />,
+              className:
+                "border-purple-500 text-purple-600 dark:text-purple-400",
+            };
+          case TaskStatus.TODO:
+            return {
+              icon: <IconClock className="text-gray-500" />,
+              className: "border-gray-400 text-gray-600 dark:text-gray-300",
+            };
+          case TaskStatus.BLOCKED:
+            return {
+              icon: <IconAlertTriangle className="text-red-500" />,
+              className: "border-red-500 text-red-600 dark:text-red-400",
+            };
+          case TaskStatus.CANCELED:
+            return {
+              icon: <IconBan className="text-orange-500" />,
+              className:
+                "border-orange-500 text-orange-600 dark:text-orange-400",
+            };
+          default:
+            return {
+              icon: <IconLoader className="text-muted-foreground" />,
+              className: "border-muted text-muted-foreground",
+            };
+        }
+      };
+
+      const { icon, className } = getStatusStyle();
+
+      return (
+        <Badge
+          variant="outline"
+          className={`flex items-center gap-1 px-1.5 ${className}`}
+        >
+          {icon}
+          <span className="ml-1">{status.replaceAll("_", " ")}</span>
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "target",
@@ -418,50 +470,20 @@ export function DataTable({
     project_id: "e5b3f87a-9a33-4b3c-99b2-ef2132d5f1a7",
     created_at: new Date(),
   });
-  // const router = useRouter();
-  const handleSubmit = async (e: React.FormEvent) => {
-    // e.preventDefault();
 
-    try {
-      // 🔹 أولاً: اجلب بيانات المستخدم (من الكوكيز)
-      // const ress = await api.get("/users/info", { withCredentials: true });
-      // if (ress.status === 200) {
-      //   console.log("form done");
-      //   console.log("data", ress.data.user_id);
-      //   // 🔹 ثانياً: ضع user_id داخل الحالة
-      //   // 🔹 ثالثاً: أرسل الطلب لإنشاء المهمة
-      //   console.log("form done");
-      //   const res = await api.post("/tasks/create", form, {
-      //     withCredentials: true,
-      //   });
-      //   console.log("✅ Task created:", res.data);
-      //   return res.data;
-      // }
-    } catch (error) {
-      console.log(error);
-      console.error("❌ Failed to create task:", error);
-    }
-  };
   const submit = useMutation({
     mutationFn: async () => {
       const ress = await api.get("/users/info", { withCredentials: true });
 
       if (ress.status === 200) {
         console.log("form done");
-        // console.log("data", ress.data.user_id);
-        // 🔹 ثانياً: ضع user_id داخل الحالة
-        // 🔹 ثالثاً: أرسل الطلب لإنشاء المهمة
-        console.log("form done");
-
-     
         const ress = await api.post("/tasks/task", form, {
           withCredentials: true,
         });
         return ress.data;
-      } 
+      }
     },
     onSuccess: () => {
-      console.log();
       alert("✅ created successfully");
     },
     onError: (err: any) => alert("❌ " + err.response),
