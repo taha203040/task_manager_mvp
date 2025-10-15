@@ -12,23 +12,25 @@ import { api } from "@/lib/axios";
 
 export default function Page() {
   const router = useRouter();
-  // const [data, setData] = useState([]);
+  const [data, setData] = useState([]);
   useEffect(() => {
     const handleData = async () => {
       try {
-        const data = await api.get("/", {
+        const datas = await api.get("/tasks/", {
           withCredentials: true,
         });
-        if (data.status === 200) {
-          // setData(data.data);
-          return data.data;
+        if (datas.status === 200) {
+          setData(datas.data);
+          console.log(datas.data);
+          // return data.data.tasks
         }
       } catch (err) {
-        console.log;
+        console.log(err);
       }
     };
     handleData();
   }, [router]);
+  console.log(data);
 
   return (
     <SidebarProvider

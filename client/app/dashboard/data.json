@@ -3,7 +3,7 @@
     "id": 1,
     "header": "Cover page",
     "type": "Cover page",
-    "status": "COMPLETED",
+    "status": "BLOCKED",
     "target": "18",
     "limit": "5",
     "reviewer": "Eddie Lake"
@@ -21,7 +21,7 @@
     "id": 3,
     "header": "Executive summary",
     "type": "Narrative",
-    "status": "Done",
+    "status": "IN_PROGESS",
     "target": "10",
     "limit": "13",
     "reviewer": "Eddie Lake"
