@@ -30,8 +30,10 @@ export class TaskController {
                 user_id,
                 project_id || null,
                 crypto.randomUUID(),
-                new Date(),
+                new Date(), // created_at
+                new Date(), // updated_at
             );
+
             const createTaskUseCase = new CreateTask(taskrepo);
             await createTaskUseCase.execute(task);
             res.status(201).json({ message: "Task created successfully" });

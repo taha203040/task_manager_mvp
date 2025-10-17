@@ -18,15 +18,16 @@ export class TaskRepoPostGress implements TaskRepo {
         if (result.rows.length === 0) return null;
         const row = result.rows[0];
         return new Task(
-            row.id,
             row.title,
             row.description,
             row.priority,
             row.due_date,
             row.status,
+            row.user_id,
             row.project_id,
+            row.id,
             row.created_at,
-            row.user_id
+            row.updated_at
         );
     }
 
@@ -48,16 +49,19 @@ export class TaskRepoPostGress implements TaskRepo {
             "SELECT * FROM tasks WHERE user_id = $1",
             [userId]
         );
-        return result.rows.map(row => new Task(
-            row.id,
-            row.title,
-            row.description,
-            row.priority,
-            row.due_date,
-            row.status,
-            row.project_id,
-            row.created_at,
-            row.user_id
-        ));
+        return result.rows.map(row =>
+            new Task(
+                row.title,
+                row.description,
+                row.priority,
+                row.due_date,
+                row.status,
+                row.user_id,
+                row.project_id,
+                row.id,
+                row.created_at,
+                row.updated_at
+            )
+        );
     }
 }

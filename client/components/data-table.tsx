@@ -114,12 +114,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const schema = z.object({
-  id: z.number(),
+  id: z.string(),
   title: z.string(),
   type: z.string(),
   status: z.string(),
   priority: z.string(),
-  reviewer: z.string(),
+  // reviewer: z.string(),
 });
 import { useState } from "react";
 import { api } from "@/lib/axios";
@@ -146,11 +146,11 @@ function DragHandle({ id }: { id: number }) {
 }
 
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
-  {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-  },
+  // {
+  //   id: "drag",
+  //   header: () => null,
+  //   cell: ({ row }) => <DragHandle id={row.original.id} />,
+  // },
   {
     id: "select",
     header: ({ table }) => (
@@ -176,8 +176,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  }
-  ,
+  },
   {
     accessorKey: "header",
     header: "Tasks list",
@@ -192,7 +191,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     cell: ({ row }) => (
       <div className="w-32">
         <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.type}d
+          {row.original.type}
         </Badge>
       </div>
     ),
@@ -314,11 +313,11 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     accessorKey: "Responsible",
     header: "Responsible",
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer";
+      // const isAssigned = row.original.reviewer !== "Assign reviewer";
 
-      if (isAssigned) {
-        return row.original.reviewer;
-      }
+      // if (isAssigned) {
+      // return row.original.reviewer;
+      // }
 
       return (
         <>
@@ -400,8 +399,12 @@ export function DataTable({
 }: {
   data: z.infer<typeof schema>[];
 }) {
+  console.log(initialData);
   const [data, setData] = React.useState(() => initialData);
-  console.log(data)
+  React.useEffect(() => {
+    console.log("data after state init:", data);
+  }, [data]);
+
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -420,11 +423,12 @@ export function DataTable({
     useSensor(KeyboardSensor, {})
   );
 
-  const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ id }) => id) || [],
-    [data]
-  );
+  // const dataIds = React.useMemo<UniqueIdentifier[]>(
+  //   () => data?.map(({ id }) => id) || [],
+  //   [data]
+  // );
 
+  // console.log(columns)
   const table = useReactTable({
     data,
     columns,
@@ -453,11 +457,11 @@ export function DataTable({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
-        return arrayMove(data, oldIndex, newIndex);
-      });
+      // setData((data) => {
+      //   // const oldIndex = dataIds.indexOf(active.id);
+      //   // const newIndex = dataIds.indexOf(over.id);
+      //   // return arrayMove(data, oldIndex, newIndex);
+      // });
     }
   }
 
@@ -736,7 +740,7 @@ export function DataTable({
               <TableBody className="**:data-[slot=table-cell]:first:w-8">
                 {table.getRowModel().rows?.length ? (
                   <SortableContext
-                    items={dataIds}
+                    items={[]}
                     strategy={verticalListSortingStrategy}
                   >
                     {table.getRowModel().rows.map((row) => (
@@ -1007,7 +1011,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </div>
             <div className="flex flex-col gap-3">
               <Label htmlFor="reviewer">Reviewer</Label>
-              <Select defaultValue={item.reviewer}>
+              <Select>
                 <SelectTrigger id="reviewer" className="w-full">
                   <SelectValue placeholder="Select a reviewer" />
                 </SelectTrigger>

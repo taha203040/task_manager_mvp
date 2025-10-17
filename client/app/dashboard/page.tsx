@@ -5,32 +5,40 @@ import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-import data from "./data.json";
+// import data from "./data.json";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/axios";
-
+// interface tasks {
+//   id: number;
+//   title: string;
+//   type: string;
+//   status: string;
+//   priority: string;
+// }
 export default function Page() {
   const router = useRouter();
   const [data, setData] = useState([]);
   useEffect(() => {
     const handleData = async () => {
       try {
-        const datas = await api.get("/tasks/", {
-          withCredentials: true,
-        });
-        if (datas.status === 200) {
-          setData(datas.data);
-          console.log(datas.data);
-          // return data.data.tasks
+        const res = await api.get("/tasks/", { withCredentials: true });
+        if (res.status === 200 && Array.isArray(res.data.tasks)) {
+          const formatted = res.data.tasks.map((t: any) => ({
+            id: String(t.id ?? ""), // تأكد أن القيمة نصية
+            title: String(t.title ?? ""), // العنوان
+            type: String(t.description ?? ""), // الوصف كنوع
+            status: String(t.status ?? ""), // الحالة
+            priority: String(t.priority ?? ""), // الأولوية
+          }));
+          setData(formatted);
         }
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     };
     handleData();
   }, [router]);
-  console.log(data);
 
   return (
     <SidebarProvider
