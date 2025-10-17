@@ -49,8 +49,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         if (res.status === 200) {
           setEmail(res.data.email);
           setUser(res.data.username);
-          console.log(res.data);
-          console.log(res.data.user_id)
+          // console.log(res.data);
+          // console.log(res.data.user_id)
         }
       } catch (err) {
         router.push("/login");
