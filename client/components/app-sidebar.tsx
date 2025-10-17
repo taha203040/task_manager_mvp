@@ -83,12 +83,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Projects",
-        url: "#",
+        url: "/projects",
         icon: IconFolder,
       },
       {
         title: "Team",
-        url: "#",
+        url: "/team",
         icon: IconUsers,
       },
     ],
