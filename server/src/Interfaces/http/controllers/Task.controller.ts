@@ -12,7 +12,7 @@ export class TaskController {
             //@ts-ignore
             const user_id = req.user?.user_id || null
             //@ts-ignore
-            console.log('ussr id', user_id)
+            // console.log('ussr id', user_id)
             // console.log('title :', title)
 
             if (!user_id) {
@@ -125,8 +125,9 @@ export class TaskController {
 
     static async deleteTask(req: Request, res: Response) {
         try {
-            const { id, user_id } = req.params;
-
+            const { id } = req.params;
+            //@ts-ignore
+            const user_id = req.user?.user_id
             if (!id || !user_id) {
                 return res.status(400).json({ error: "Task ID is required" });
             }

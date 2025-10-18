@@ -11,7 +11,7 @@ userRouter.post("/signin", UserController.login);
 
 userRouter.get('/info', authenticate, (req, res) => {
         //@ts-ignore
-    console.log(req.user?.user_id)
+    // console.log(req.user?.user_id)
     //@ts-ignore
     res.status(200).send({ email: req.user?.email, username: req.user.username, user_id: req.user?.user_id })
 }

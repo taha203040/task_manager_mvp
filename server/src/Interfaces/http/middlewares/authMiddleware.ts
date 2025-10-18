@@ -17,8 +17,8 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
         // @ts-ignore
         req.user = decoded as any
         //@ts-ignore
-        console.log(req.user)
-        console.log('auth done')
+        // console.log(req.user)
+        // console.log('auth done')
         next(); // Proceed to the next middleware or route handler
     } catch (err) {
         console.error(err);

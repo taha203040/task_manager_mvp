@@ -125,6 +125,7 @@ import { useState } from "react";
 import { api } from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { TaskPriority, TaskStatus } from "@/utils/enums";
+import { DialogClose } from "@radix-ui/react-dialog";
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
@@ -144,230 +145,6 @@ function DragHandle({ id }: { id: number }) {
     </Button>
   );
 }
-
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
-  // {
-  //   id: "drag",
-  //   header: () => null,
-  //   cell: ({ row }) => <DragHandle id={row.original.id} />,
-  // },
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "header",
-    header: "Tasks list",
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />;
-    },
-    enableHiding: false,
-  },
-  {
-    accessorKey: "task type",
-    header: "Task type",
-    cell: ({ row }) => (
-      <div className="w-32">
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.type}
-        </Badge>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status as TaskStatus;
-
-      const getStatusStyle = () => {
-        switch (status) {
-          case TaskStatus.COMPLETED:
-            return {
-              icon: (
-                <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-              ),
-              className: "border-green-500 text-green-700 dark:text-green-400",
-            };
-          case TaskStatus.IN_PROGRESS:
-            return {
-              icon: <IconLoader className="animate-spin text-blue-500" />,
-              className: "border-blue-500 text-blue-600 dark:text-blue-400",
-            };
-          case TaskStatus.IN_REVIEW:
-            return {
-              icon: <IconEye className="text-purple-500" />,
-              className:
-                "border-purple-500 text-purple-600 dark:text-purple-400",
-            };
-          case TaskStatus.TODO:
-            return {
-              icon: <IconClock className="text-gray-500" />,
-              className: "border-gray-400 text-gray-600 dark:text-gray-300",
-            };
-          case TaskStatus.BLOCKED:
-            return {
-              icon: <IconAlertTriangle className="text-red-500" />,
-              className: "border-red-500 text-red-600 dark:text-red-400",
-            };
-          case TaskStatus.CANCELED:
-            return {
-              icon: <IconBan className="text-orange-500" />,
-              className:
-                "border-orange-500 text-orange-600 dark:text-orange-400",
-            };
-          default:
-            return {
-              icon: <IconLoader className="text-muted-foreground" />,
-              className: "border-muted text-muted-foreground",
-            };
-        }
-      };
-
-      const { icon, className } = getStatusStyle();
-
-      return (
-        <Badge
-          variant="outline"
-          className={`flex items-center gap-1 px-1.5 ${className}`}
-        >
-          {icon}
-          <span className="ml-1">{status.replaceAll("_", " ")}</span>
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "target",
-    header: () => <div className="w-full text-right">Target</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.title}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-          Target
-        </Label>
-        <Input
-          className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-          // defaultValue={row.original.target}
-          id={`${row.original.id}-target`}
-        />
-      </form>
-    ),
-  },
-  {
-    accessorKey: "limit",
-    header: () => <div className="w-full text-right">Limit</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.title}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
-        </Label>
-        <Input
-          className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.priority}
-          id={`${row.original.id}-limit`}
-        />
-      </form>
-    ),
-  },
-  {
-    accessorKey: "Responsible",
-    header: "Responsible",
-    cell: ({ row }) => {
-      // const isAssigned = row.original.reviewer !== "Assign reviewer";
-
-      // if (isAssigned) {
-      // return row.original.reviewer;
-      // }
-
-      return (
-        <>
-          <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-            Reviewer
-          </Label>
-          <Select>
-            <SelectTrigger
-              className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
-              size="sm"
-              id={`${row.original.id}-reviewer`}
-            >
-              <SelectValue placeholder="Assign reviewer" />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-              <SelectItem value="Jamik Tashpulatov">
-                Jamik Tashpulatov
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </>
-      );
-    },
-  },
-  {
-    id: "actions",
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-            size="icon"
-          >
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
@@ -399,9 +176,256 @@ export function DataTable({
 }: {
   data: z.infer<typeof schema>[];
 }) {
-  console.log(initialData);
+  const handleDelete = useMutation({
+    mutationFn: async (id: string) => {
+      const ress = await api.get("/users/info", { withCredentials: true });
+
+      if (ress.status === 200) {
+        console.log("form done");
+        const ress = await api.delete(`/tasks/${id}`, {
+          withCredentials: true,
+        });
+        return ress.data;
+      }
+    },
+    onSuccess: () => {
+      alert("✅ created successfully");
+    },
+    onError: (err: any) => alert("❌ " + err.response),
+  });
+  const columns: ColumnDef<z.infer<typeof schema>>[] = [
+    // {
+    //   id: "drag",
+    //   header: () => null,
+    //   cell: ({ row }) => <DragHandle id={row.original.id} />,
+    // },
+    {
+      id: "select",
+      header: ({ table }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
+            aria-label="Select all"
+          />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "header",
+      header: "Tasks list",
+      cell: ({ row }) => {
+        return <TableCellViewer item={row.original} />;
+      },
+      enableHiding: false,
+    },
+    // {
+    //   accessorKey: "task type",
+    //   header: "Task type",
+    //   cell: ({ row }) => (
+    //     <div className="w-32">
+    //       <Badge variant="outline" className="text-muted-foreground px-1.5">
+    //         {row.original.type}
+    //       </Badge>
+    //     </div>
+    //   ),
+    // },
+    {
+      accessorKey: "status",
+      header: "Statuus",
+      cell: ({ row }) => {
+        const status = row.original.status as TaskStatus;
+
+        const getStatusStyle = () => {
+          switch (status) {
+            case TaskStatus.COMPLETED:
+              return {
+                icon: (
+                  <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+                ),
+                className:
+                  "border-green-500 text-green-700 dark:text-green-400",
+              };
+            case TaskStatus.IN_PROGRESS:
+              return {
+                icon: <IconLoader className="animate-spin text-blue-500" />,
+                className: "border-blue-500 text-blue-600 dark:text-blue-400",
+              };
+            case TaskStatus.IN_REVIEW:
+              return {
+                icon: <IconEye className="text-purple-500" />,
+                className:
+                  "border-purple-500 text-purple-600 dark:text-purple-400",
+              };
+            case TaskStatus.TODO:
+              return {
+                icon: <IconClock className="text-gray-500" />,
+                className: "border-gray-400 text-gray-600 dark:text-gray-300",
+              };
+            case TaskStatus.BLOCKED:
+              return {
+                icon: <IconAlertTriangle className="text-red-500" />,
+                className: "border-red-500 text-red-600 dark:text-red-400",
+              };
+            case TaskStatus.CANCELED:
+              return {
+                icon: <IconBan className="text-orange-500" />,
+                className:
+                  "border-orange-500 text-orange-600 dark:text-orange-400",
+              };
+            default:
+              return {
+                icon: <IconLoader className="text-muted-foreground" />,
+                className: "border-muted text-muted-foreground",
+              };
+          }
+        };
+
+        const { icon, className } = getStatusStyle();
+
+        return (
+          <Badge
+            variant="outline"
+            className={`flex items-center gap-1 px-1.5 ${className}`}
+          >
+            {icon}
+            <span className="ml-1">{status.replaceAll("_", " ")}</span>
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "Priority",
+      header: "Priority",
+      cell: ({ row }) => {
+        const priority = row.original.priority as TaskPriority;
+
+        const getPriorityStyle = () => {
+          switch (priority) {
+            case TaskPriority.LOW:
+              return {
+                className:
+                  "border-green-500 text-green-700 dark:text-green-400",
+              };
+            case TaskPriority.MEDIUM:
+              return {
+                className:
+                  "border-yellow-500 text-yellow-700 dark:text-yellow-400",
+              };
+            case TaskPriority.HIGH:
+              return {
+                className:
+                  "border-orange-500 text-orange-700 dark:text-orange-400",
+              };
+            case TaskPriority.CRITICAL:
+              return {
+                className: "border-red-500 text-red-700 dark:text-red-400",
+              };
+            default:
+              return {
+                className: "border-muted text-muted-foreground",
+              };
+          }
+        };
+
+        const { className } = getPriorityStyle();
+
+        return (
+          <div className="w-full text-right">
+            <Badge
+              variant="outline"
+              className={`flex items-center gap-1 px-1.5 ${className}`}
+            >
+              <span className="ml-1">{priority.replaceAll("_", " ")}</span>
+            </Badge>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "Responsible",
+      header: "Responsible",
+      cell: ({ row }) => {
+        // const isAssigned = row.original.reviewer !== "Assign reviewer";
+
+        // if (isAssigned) {
+        // return row.original.reviewer;
+        // }
+
+        return (
+          <>
+            <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
+              Reviewer
+            </Label>
+            <Select>
+              <SelectTrigger
+                className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
+                size="sm"
+                id={`${row.original.id}-reviewer`}
+              >
+                <SelectValue placeholder="Assign reviewer" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
+                <SelectItem value="Jamik Tashpulatov">
+                  Jamik Tashpulatov
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </>
+        );
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+              size="icon"
+            >
+              <IconDotsVertical />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem>Make a copy</DropdownMenuItem>
+            <DropdownMenuItem>Favorite</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => handleDelete.mutate(row.id)}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
+  // console.log(initialData);
   // const [data, setData] = React.useState(() => initialData);
-const data = initialData
+  const data = initialData;
 
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -427,6 +451,7 @@ const data = initialData
   // );
 
   // console.log(columns)
+
   const table = useReactTable({
     data,
     columns,
@@ -491,6 +516,7 @@ const data = initialData
     },
     onError: (err: any) => alert("❌ " + err.response),
   });
+
   return (
     <Tabs
       defaultValue="outline"
@@ -695,7 +721,11 @@ const data = initialData
                 </div> */}
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline">Cancel</Button>
+                  <DialogClose asChild>
+                    <Button variant="outline" type="button">
+                      Cancel
+                    </Button>
+                  </DialogClose>
                   <Button type="submit">Create Task</Button>
                 </div>
               </form>
@@ -955,6 +985,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             <div className="flex flex-col gap-3">
               <Label htmlFor="header">Header</Label>
               <Input id="header" defaultValue={item.title} />
+              <Input id="header" defaultValue={item.type} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
@@ -990,20 +1021,18 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                     <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Done">Done</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Not Started">Not Started</SelectItem>
+                    <SelectItem value="Done">{item.status}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
+                {/* <Label htmlFor="target">Target</Label> */}
                 {/* <Input id="target" defaultValue={item.target} /> */}
               </div>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
+                <Label htmlFor="limit">Periority</Label>
                 <Input id="limit" defaultValue={item.priority} />
               </div>
             </div>
