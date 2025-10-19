@@ -21,6 +21,7 @@ import { useState } from "react";
 import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { Spinner } from "./ui/spinner";
+import { toast } from "sonner";
 
 export function LoginForm({
   className,
@@ -37,7 +38,9 @@ export function LoginForm({
       router.push("/");
       alert("✅ Registered successfully");
     },
-    onError: (err: any) => alert("❌ " + err.response?.data?.message),
+    onError: () => {
+      toast.error("The password or the username are not correct");
+    },
   });
   // const data = await res.json();
 

@@ -9,6 +9,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/axios";
+import { Toaster } from "sonner";
 // interface tasks {
 //   id: number;
 //   title: string;
@@ -19,6 +20,23 @@ import { api } from "@/lib/axios";
 export default function Page() {
   const router = useRouter();
   const [data, setData] = useState([]);
+  const fetchTasks = async () => {
+    try {
+      const res = await api.get("/tasks/", { withCredentials: true });
+      if (res.status === 200 && Array.isArray(res.data.tasks)) {
+        const formatted = res.data.tasks.map((t: any) => ({
+          id: String(t.id ?? ""),
+          title: String(t.title ?? ""),
+          type: String(t.description ?? ""),
+          status: String(t.status ?? ""),
+          priority: String(t.priority ?? ""),
+        }));
+        setData(formatted);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   useEffect(() => {
     const handleData = async () => {
       try {
@@ -49,6 +67,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
+      <Toaster richColors />
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
@@ -59,7 +78,7 @@ export default function Page() {
               <div className="px-4 lg:px-6">
                 {/* <ChartAreaInteractive /> */}
               </div>
-              <DataTable data={data} />
+              <DataTable onTaskCreated={fetchTasks} data={data} />
             </div>
           </div>
         </div>

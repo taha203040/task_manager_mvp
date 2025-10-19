@@ -173,8 +173,10 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 
 export function DataTable({
   data: initialData,
+  onTaskCreated,
 }: {
   data: z.infer<typeof schema>[];
+  onTaskCreated: () => void;
 }) {
   const handleDelete = useMutation({
     mutationFn: async (id: string) => {
@@ -189,9 +191,9 @@ export function DataTable({
       }
     },
     onSuccess: () => {
-      alert("✅ created successfully");
+      toast.success("The task deleted");
     },
-    onError: (err: any) => alert("❌ " + err.response),
+    onError: () => toast.error("The task not deleted"),
   });
   const columns: ColumnDef<z.infer<typeof schema>>[] = [
     // {
@@ -504,17 +506,23 @@ export function DataTable({
       const ress = await api.get("/users/info", { withCredentials: true });
 
       if (ress.status === 200) {
-        console.log("form done");
-        const ress = await api.post("/tasks/task", form, {
+        const result = await api.post("/tasks/task", form, {
           withCredentials: true,
         });
-        return ress.data;
+        return result.data;
+      } else {
+        throw new Error("User info fetch failed");
       }
     },
     onSuccess: () => {
-      alert("✅ created successfully");
+      onTaskCreated()
+      toast.success("✅ Task created successfully");
     },
-    onError: (err: any) => alert("❌ " + err.response),
+    onError: (err: any) => {
+      const message =
+        err?.response?.data?.message || "❌ Error when creating task";
+      toast.error(message);
+    },
   });
 
   return (
@@ -588,6 +596,7 @@ export function DataTable({
           {/* <Button variant="outline" size="sm"> */}
           {/* <IconPlus /> */}
           {/* <span className="hidden lg:inline">Create Task</span> */}
+
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">

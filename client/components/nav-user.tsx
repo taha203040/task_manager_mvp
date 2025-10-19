@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function NavUser({
   user,
@@ -43,6 +44,7 @@ export function NavUser({
       const res = await api.get("/auth/logout");
       if (res.status === 200) {
         console.log("log done");
+        toast.success("The user logout correctly");
         router.push("/login");
       }
     } catch (err) {
