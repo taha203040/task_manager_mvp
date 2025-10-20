@@ -33,8 +33,8 @@ export class TaskRepoPostGress implements TaskRepo {
 
     async update(task: Task, userId: string): Promise<void> {
         await this.pool.query(
-            "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5, project_id = $6,  WHERE id = $7 AND user_id = $8",
-            [task.title, task.description, task.priority, task.due_date, task.status, task.project_id, task.id, userId]
+            "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5, project_id = $6, updated_at = $7 WHERE id = $8 AND user_id = $9",
+            [task.title, task.description, task.priority, task.due_date, task.status, task.project_id, task.updated_at, task.id, userId]
         );
     }
 

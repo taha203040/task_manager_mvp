@@ -126,6 +126,16 @@ import { api } from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { TaskPriority, TaskStatus } from "@/utils/enums";
 import { DialogClose } from "@radix-ui/react-dialog";
+interface Form {
+  title?: string;
+  description?: string;
+  priority?: string;
+  due_date?: Date;
+  status?: string;
+  id: string;
+  project_id?: string;
+  created_at?: string;
+}
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
@@ -178,6 +188,38 @@ export function DataTable({
   data: z.infer<typeof schema>[];
   onTaskCreated: () => void;
 }) {
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    priority: "",
+    due_date: new Date(),
+    status: TaskStatus.TODO,
+    id: crypto.randomUUID(),
+    project_id: "e5b3f87a-9a33-4b3c-99b2-ef2132d5f1a7",
+    created_at: new Date(),
+  });
+
+  const debonce = (() => {
+    let timer: NodeJS.Timeout;
+    return async (id: string, form: Form) => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        try {
+          const ress = await api.put(`/tasks/${id}`, form, {
+            withCredentials: true,
+          });
+          if (ress.status === 200) {
+            console.log("task updated");
+            toast.success("successful");
+            onTaskCreated();
+          }
+        } catch (err) {
+          console.log(err);
+          toast.error("error when updating");
+        }
+      }, 500);
+    };
+  })();
   const handleDelete = useMutation({
     mutationFn: async (id: string) => {
       const ress = await api.get("/users/info", { withCredentials: true });
@@ -191,6 +233,8 @@ export function DataTable({
       }
     },
     onSuccess: () => {
+      onTaskCreated();
+
       toast.success("The task deleted");
     },
     onError: () => toast.error("The task not deleted"),
@@ -233,7 +277,7 @@ export function DataTable({
       accessorKey: "header",
       header: "Tasks list",
       cell: ({ row }) => {
-        return <TableCellViewer item={row.original} />;
+        return <TableCellViewer onchangetask={debonce} item={row.original} />;
       },
       enableHiding: false,
     },
@@ -256,7 +300,7 @@ export function DataTable({
 
         const getStatusStyle = () => {
           switch (status) {
-            case TaskStatus.COMPLETED:
+            case TaskStatus.DONE:
               return {
                 icon: (
                   <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
@@ -285,12 +329,7 @@ export function DataTable({
                 icon: <IconAlertTriangle className="text-red-500" />,
                 className: "border-red-500 text-red-600 dark:text-red-400",
               };
-            case TaskStatus.CANCELED:
-              return {
-                icon: <IconBan className="text-orange-500" />,
-                className:
-                  "border-orange-500 text-orange-600 dark:text-orange-400",
-              };
+
             default:
               return {
                 icon: <IconLoader className="text-muted-foreground" />,
@@ -490,17 +529,6 @@ export function DataTable({
     }
   }
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    priority: "",
-    due_date: new Date(),
-    status: TaskStatus.TODO,
-    id: crypto.randomUUID(),
-    project_id: "e5b3f87a-9a33-4b3c-99b2-ef2132d5f1a7",
-    created_at: new Date(),
-  });
-
   const submit = useMutation({
     mutationFn: async () => {
       const ress = await api.get("/users/info", { withCredentials: true });
@@ -515,7 +543,7 @@ export function DataTable({
       }
     },
     onSuccess: () => {
-      onTaskCreated()
+      onTaskCreated();
       toast.success("✅ Task created successfully");
     },
     onError: (err: any) => {
@@ -654,21 +682,16 @@ export function DataTable({
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
+                          <SelectItem value={TaskStatus.TODO}>TODO</SelectItem>
                           <SelectItem value={TaskStatus.IN_PROGRESS}>
                             In Progress
                           </SelectItem>
                           <SelectItem value={TaskStatus.IN_REVIEW}>
-                            In Review
+                            IN_REVIEW{" "}
                           </SelectItem>
-                          <SelectItem value={TaskStatus.COMPLETED}>
-                            Completed
-                          </SelectItem>
+                          <SelectItem value={TaskStatus.DONE}>DONE</SelectItem>
                           <SelectItem value={TaskStatus.BLOCKED}>
-                            Blocked
-                          </SelectItem>
-                          <SelectItem value={TaskStatus.CANCELED}>
-                            Canceled
+                            BLOCKED{" "}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -915,7 +938,13 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
+function TableCellViewer({
+  item,
+  onchangetask,
+}: {
+  item: z.infer<typeof schema>;
+  onchangetask: (id: string, form: Form) => void;
+}) {
   const isMobile = useIsMobile();
 
   return (
@@ -992,57 +1021,71 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           )}
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.title} />
-              <Input id="header" defaultValue={item.type} />
+              <Label htmlFor="header">Title</Label>
+              <Input
+                id="header"
+                onChange={(e) =>
+                  onchangetask(item.id, { ...item, title: e.target.value })
+                }
+                defaultValue={item.title}
+              />
+              <Label htmlFor="header">Describtion</Label>
+              <Input
+                id="header"
+                onChange={(e) =>
+                  onchangetask(item.id, { ...item, title: e.target.value })
+                }
+                defaultValue={item.type}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
-                <Select defaultValue={item.type}>
-                  <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
+                <Label htmlFor="type">Status</Label>
+                <Select
+                  defaultValue={item.status}
+                  onValueChange={(value: TaskStatus) =>
+                    onchangetask(item.id, { ...item, status: value })
+                  }
+                >
+                  <SelectTrigger id="task-status">
+                    <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Table of Contents">
-                      Table of Contents
+                    <SelectItem value={TaskStatus.TODO}>TODO</SelectItem>
+                    <SelectItem value={TaskStatus.IN_PROGRESS}>
+                      IN_PROGRESS{" "}
                     </SelectItem>
-                    <SelectItem value="Executive Summary">
-                      Executive Summary
+                    <SelectItem value={TaskStatus.IN_REVIEW}>
+                      IN_REVIEW{" "}
                     </SelectItem>
-                    <SelectItem value="Technical Approach">
-                      Technical Approach
-                    </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">
-                      Focus Documents
-                    </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Select defaultValue={item.status}>
-                  <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Done">{item.status}</SelectItem>
+                    <SelectItem value={TaskStatus.DONE}>DONE</SelectItem>
+                    <SelectItem value={TaskStatus.BLOCKED}>BLOCKED</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                {/* <Label htmlFor="target">Target</Label> */}
-                {/* <Input id="target" defaultValue={item.target} /> */}
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Periority</Label>
-                <Input id="limit" defaultValue={item.priority} />
+                <Label htmlFor="priority">Periority</Label>
+                <Select
+                  defaultValue={item.priority}
+                  value={item.status}
+                  onValueChange={(value: TaskPriority) =>
+                    onchangetask(item.id, { ...item, priority: value })
+                  }
+                >
+                  <SelectTrigger id="task-priority">
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TaskPriority.LOW}>Low</SelectItem>
+                    <SelectItem value={TaskPriority.MEDIUM}>Medium</SelectItem>
+                    <SelectItem value={TaskPriority.HIGH}>High</SelectItem>
+                    <SelectItem value={TaskPriority.CRITICAL}>
+                      Critical
+                    </SelectItem>
+                  </SelectContent>
+                </Select>{" "}
               </div>
             </div>
             <div className="flex flex-col gap-3">

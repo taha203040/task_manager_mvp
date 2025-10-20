@@ -90,15 +90,16 @@ export class TaskController {
     static async updateTask(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { title, description, status, userId, teamId } = req.body;
-
+            const { title, description, status, project_id, priority, due_date, } = req.body;
+            //@ts-ignore
+            const user_id = req.user?.user_id || 'undefind'
             if (!id) {
                 return res.status(400).json({ error: "Task ID is required" });
             }
 
             // First get the existing task to merge with updates
             const getTaskUseCase = new GetTaskById(taskrepo);
-            const existingTask = await getTaskUseCase.execute(id, userId);
+            const existingTask = await getTaskUseCase.execute(id, user_id);
 
             if (!existingTask) {
                 return res.status(404).json({ error: "Task not found" });
@@ -107,14 +108,16 @@ export class TaskController {
             const updatedTask = {
                 ...existingTask,
                 title: title || existingTask.title,
-                content: description !== undefined ? description : existingTask.description,
+                description: description !== undefined ? description : existingTask.description,
                 status: status || existingTask.status,
-                userId: userId || existingTask.user_id,
-                updatedAt: new Date()
+                project_id: project_id !== undefined ? project_id : existingTask.project_id,
+                priority: priority || existingTask.priority,
+                due_date: due_date !== undefined ? new Date(due_date) : existingTask.due_date,
+                updated_at: new Date()
             };
 
             const updateTaskUseCase = new UpdateTask(taskrepo);
-            await updateTaskUseCase.execute(updatedTask, userId);
+            await updateTaskUseCase.execute(updatedTask, user_id);
 
             res.status(200).json({ message: "Task updated successfully" });
         } catch (err) {
