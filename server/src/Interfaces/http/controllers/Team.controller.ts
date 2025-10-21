@@ -9,14 +9,17 @@ const teamRepo = new TeamRepoPostGress(pool);
 export class TeamController {
     static async createTeam(req: Request, res: Response) {
         try {
-            const { name, description, created_by } = req.body;
-            if (!name || !created_by) {
+            const { name, description } = req.body;
+            //@ts-ignore
+            const  user_id  = req.user?.user_id
+            console.log(user_id)
+            if (!name || !user_id) {
                 return res.status(400).json({ error: "Name and userId are required" });
             }
             const team: Team = new Team(
                 name,
+                user_id,
                 description || null,
-                created_by,
             );
             const teamUseCase = new CreateTeam(teamRepo);
             await teamUseCase.execute(team);
