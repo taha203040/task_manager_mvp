@@ -11,7 +11,7 @@ export class TeamController {
         try {
             const { name, description } = req.body;
             //@ts-ignore
-            const  user_id  = req.user?.user_id
+            const user_id = req.user?.user_id
             console.log(user_id)
             if (!name || !user_id) {
                 return res.status(400).json({ error: "Name and userId are required" });
@@ -50,8 +50,9 @@ export class TeamController {
             const { id } = req.params;
             // @ts-ignore
             const { user_id } = req.user
+            console.log('the user', user_id, 'the id', id)
             if (!id || !user_id) {
-                return res.status(400).json({ error: "Team id and userId are required" });
+                return res.status(400).json({ error: "Team id and userId are required1" });
             }
             const teamUseCase = new GetTeamById(teamRepo);
             const team = await teamUseCase.execute(id, user_id);
@@ -69,7 +70,7 @@ export class TeamController {
         try {
             const { id, userId } = req.params;
             if (!id || !userId) {
-                return res.status(400).json({ error: "Team id and userId are required" });
+                return res.status(400).json({ error: "Team id and userId are required2" });
             }
             const teamUseCase = new DeleteTeam(teamRepo);
             await teamUseCase.execute(id, userId);
@@ -85,7 +86,7 @@ export class TeamController {
             const { id, userId } = req.params;
             const { name, description } = req.body;
             if (!id || !userId) {
-                return res.status(400).json({ error: "Team id and userId are required" });
+                return res.status(400).json({ error: "Team id and userId are required3" });
             }
             const teamUseCase = new UpdateTeam(teamRepo);
 
