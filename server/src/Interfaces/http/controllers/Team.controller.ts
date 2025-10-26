@@ -13,6 +13,7 @@ export class TeamController {
             //@ts-ignore
             const user_id = req.user?.user_id
             console.log(user_id)
+            console.log(name, description)
             if (!name || !user_id) {
                 return res.status(400).json({ error: "Name and userId are required" });
             }
@@ -32,7 +33,8 @@ export class TeamController {
 
     static async getTeamsByUser(req: Request, res: Response) {
         try {
-            const { userId } = req.params;
+            // @ts-ignore
+            const userId = req.user?.user_id || 'undifind'
             if (!userId) {
                 return res.status(400).json({ error: "UserId is required" });
             }

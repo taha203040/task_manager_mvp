@@ -6,7 +6,7 @@ const teamrouter = Router();
 
 
 // router.get('/teams',TeamController );
-teamrouter.get('/', authenticate, TeamController.getTeamById);
+teamrouter.get('/', authenticate, TeamController.getTeamsByUser);
 teamrouter.post('/', authenticate, TeamController.createTeam);
 teamrouter.put('/:id', authenticate, TeamController.updateTeam);
 teamrouter.delete('/:id', authenticate, TeamController.deleteTeam);
