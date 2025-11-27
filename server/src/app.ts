@@ -26,8 +26,12 @@ app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)
 const port = 4000
+
+console.log('serer running')
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World');
+    console.log('serer running')
+
 });
 
 

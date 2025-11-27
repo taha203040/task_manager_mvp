@@ -38,8 +38,9 @@ export class UserController {
             const token = jwt.sign({ email: email, username: user.username, user_id: user.id }, 'hellofromahemd', { expiresIn: '1h' });
             res.cookie("token", token, {
                 httpOnly: true, // ❌ لا يمكن الوصول إليها من JavaScript
-                secure: true,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
-                sameSite: "strict",
+                secure: false,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
+                sameSite: "lax",
+                path: "/",
                 maxAge: 60 * 60 * 1000, // ساعة واحدة 
             });
             console.log(user.id)

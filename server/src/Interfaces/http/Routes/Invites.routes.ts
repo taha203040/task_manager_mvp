@@ -21,8 +21,6 @@ inviteRouter.get("/pending/:teamId/:userId", authenticate, InvitationController.
 // Accept an invitation
 inviteRouter.patch("/:id/respond", authenticate, InvitationController.handleInviteResponse);
 
-// Reject an invitation
-
 // Delete an invitation
 inviteRouter.delete("/:id", authenticate, InvitationController.deleteInvite);
 

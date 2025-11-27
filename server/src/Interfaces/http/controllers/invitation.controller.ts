@@ -2,6 +2,7 @@ import pool from "../../../Config/db";
 import * as invite from '../../../Application/use-cases/Team-usecases/Invite.usecase'
 import { SqlTeamInviteRepository } from "../../../Infrastructure/Repositories/Sql/Invitation";
 import { Request, Response } from 'express';
+import { MemberController } from "./Member.controller";
 
 // Initialize repository and use cases
 export function createInviteUseCases(pool: any) {
@@ -37,11 +38,13 @@ export class InvitationController {
                 role,
                 invitedBy
             });
+            console.log(newInvite)
 
             res.status(201).json(newInvite);
         } catch (error) {
+            console.log(error)
             if (error instanceof Error) {
-                res.status(400).json({ error: error.message });
+                res.status(400).json({ error: ` error :${error.message}` });
             } else {
                 res.status(500).json({ error: 'Internal server error' });
             }
@@ -105,6 +108,8 @@ export class InvitationController {
     static async handleInviteResponse(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
+            // const { id } = req.body;
+
             const { action } = req.body; // expected: "accepted" | "rejected"
 
             if (!id) {
@@ -112,23 +117,31 @@ export class InvitationController {
                 return;
             }
 
-            if (!status || !["accepted", "rejected"].includes(status)) {
+            if (!action || !["accepted", "rejected"].includes(action)) {
                 res.status(400).json({ error: "Invalid or missing status. Use 'accepted' or 'rejected'." });
                 return;
             }
 
             const updatedInvite =
-                action === "accept"
+                action === "accepted"
                     ? await InvitationController.useCases.accept.execute(id)
                     : await InvitationController.useCases.reject.execute(id);
+
+            if (action === "accepted" && updatedInvite) {
+                await MemberController.createTeamMember(
+                    updatedInvite.team_id,
+                    updatedInvite.invited_by,
+                    updatedInvite.role
+                );
+            }
 
             if (!updatedInvite) {
                 res.status(404).json({ error: "Invite not found" });
                 return;
             }
-
             res.status(200).json(updatedInvite);
         } catch (error) {
+            console.log(error)
             if (error instanceof Error) {
                 res.status(400).json({ error: error.message });
             } else {

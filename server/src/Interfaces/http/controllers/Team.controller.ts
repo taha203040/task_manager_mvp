@@ -70,12 +70,14 @@ export class TeamController {
 
     static async deleteTeam(req: Request, res: Response) {
         try {
-            const { id, userId } = req.params;
-            if (!id || !userId) {
+            const { id } = req.params;
+            //@ts-ignore
+            const user_id = req.user?.user_id
+            if (!id || !user_id) {
                 return res.status(400).json({ error: "Team id and userId are required2" });
             }
             const teamUseCase = new DeleteTeam(teamRepo);
-            await teamUseCase.execute(id, userId);
+            await teamUseCase.execute(id, user_id);
             res.status(200).json({ message: "Team deleted successfully" });
         } catch (err) {
             console.error(err);
