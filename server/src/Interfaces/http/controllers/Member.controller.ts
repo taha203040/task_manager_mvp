@@ -13,12 +13,23 @@ const checkTeamMembershipUseCase = new CheckTeamMembershipUseCase(memberReposito
 // Controller methods
 export class MemberController {
     // Create a new team member
-static async createTeamMember(teamId: string, userId: string, role: string): Promise<any> {
-    try {
+    static async searchUsers(req: any, res: any): Promise<void> {
+        try {
+            const { q: searchTerm } = req.query;
+            console.log(req.query)
+            console.log('cs', searchTerm)
+            const users = await memberRepository.searchUsers(searchTerm);
+            res.status(200).json(users);
+        } catch (error) {
+            res.status(500).json({ error: error });
+        }
+    }
+    static async createTeamMember(teamId: string, userId: string, role: string): Promise<any> {
+        try {
             const teamMember = await createTeamMemberUseCase.execute(teamId, userId, role);
-        return { status: 201, data: teamMember };
+            return { status: 201, data: teamMember };
         } catch (err) {
-        return { status: 500, data: { error: err } };
+            return { status: 500, data: { error: err } };
         }
     }
 
@@ -29,6 +40,7 @@ static async createTeamMember(teamId: string, userId: string, role: string): Pro
             const teamMembers = await getTeamMembersByTeamIdUseCase.execute(teamId);
             res.status(200).json(teamMembers);
         } catch (error) {
+            console.log(error)
             res.status(500).json({ error: error });
         }
     }

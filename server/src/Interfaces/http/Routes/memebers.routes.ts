@@ -7,18 +7,20 @@ const memberRouter = Router();
 // Create a new team member
 
 // Get team members by team ID
-memberRouter.get('/team/:teamId', authenticate , MemberController.getTeamMembersByTeamId);
+memberRouter.get('/t/:teamId', authenticate, MemberController.getTeamMembersByTeamId);
 
+// Get the result
+memberRouter.get('/search/', authenticate, MemberController.searchUsers)
 // Get team members by user ID
-memberRouter.get('/user/:userId', authenticate , MemberController.getTeamMembersByUserId);
+memberRouter.get('/u/:userId', authenticate, MemberController.getTeamMembersByUserId);
 
 // Update team member role
-memberRouter.put('/:teamId/:userId',authenticate ,  MemberController.updateTeamMemberRole);
+memberRouter.put('/:teamId/:userId', authenticate, MemberController.updateTeamMemberRole);
 
 // Delete team member
-memberRouter.delete('/:teamId/:userId', authenticate , MemberController.deleteTeamMember);
+memberRouter.delete('/:teamId/:userId', authenticate, MemberController.deleteTeamMember);
 
 // Check team membership
-memberRouter.get('/:teamId/:userId', authenticate , MemberController.checkTeamMembership);
+memberRouter.get('/:teamId/:userId', authenticate, MemberController.checkTeamMembership);
 
 export default memberRouter;

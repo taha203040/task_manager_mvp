@@ -9,6 +9,7 @@ export class Team {
 }
 export class TeamMember {
   constructor(
+    public username: string,
     public readonly team_id: string,
     public readonly user_id: string,
     public role: 'owner' | 'admin' | 'member' = 'member',

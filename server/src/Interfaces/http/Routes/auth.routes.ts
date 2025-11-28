@@ -5,7 +5,10 @@ const authrouter = Router()
 
 
 authrouter.get('/verify', authenticate, (req, res) => {
-    res.status(200).json({ msg: "done" })
+    res.status(200).json({
+        //@ts-ignore
+        msg: "done", user_id: req.user?.user_id
+    })
 })
 authrouter.get('/logout', (req, res) => {
     try {

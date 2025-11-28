@@ -29,7 +29,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { api } from "@/lib/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   Drawer,
@@ -54,6 +54,22 @@ const Page = () => {
     return res.data;
   };
 
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const res = await api.get("/auth/verify", { withCredentials: true });
+        if (!res) return;
+        setUser(res.data);
+      } catch (err) {
+        console.error("Not logged in");
+      }
+    };
+
+    loadUser();
+  }, []);
+  // console.log(user.user_id)
   const {
     data: teams,
     isLoading,
@@ -87,10 +103,63 @@ const Page = () => {
       toast.error("Team not created, try again");
     },
   });
-  
+
   const [open, setOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
-  console.log('s',selectedTeam?.id)
+  // 🔹 Fetch Team Details
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    if (selectedTeam?.id) {
+      const fetchTeamDetails = async () => {
+        try {
+          const res = await api.get(`/members/t/${selectedTeam.id}`, {
+            withCredentials: true,
+          });
+          setMembers(res.data);
+          console.log(res.data, " data");
+        } catch (error) {
+          console.error("Failed to fetch team details:", error);
+        }
+      };
+      fetchTeamDetails();
+    }
+  }, [selectedTeam?.id]);
+
+  const deleteMember = useMutation({
+    mutationFn: async ({
+      teamId,
+      userId,
+    }: {
+      teamId: string;
+      userId: string;
+    }) => {
+      await api.delete(`/members/${teamId}/${userId}`, {
+        withCredentials: true,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Member removed successfully");
+      // Refresh members list after deletion
+      if (selectedTeam?.id) {
+        const fetchTeamDetails = async () => {
+          try {
+            const res = await api.get(`/members/t/${selectedTeam.id}`, {
+              withCredentials: true,
+            });
+            setMembers(res.data);
+          } catch (error) {
+            console.log("error", error);
+            console.error("Failed to fetch team details:", error);
+          }
+        };
+        fetchTeamDetails();
+      }
+    },
+    onError: () => {
+      toast.error("Failed to remove member");
+    },
+  });
 
   return (
     <SidebarProvider>
@@ -151,7 +220,6 @@ const Page = () => {
               </Dialog>
             </div>
 
-            {/* ─── Team List Section ──────────────────────────────────────── */}
             <div className="flex-1 p-6 w-5/6">
               {isLoading ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -224,25 +292,12 @@ const Page = () => {
                             Team Info
                           </h3>
                           <label>username</label>
-                          <Input type="text" />
-                          <p>
-                            <strong>ID:</strong> {selectedTeam?.id}
-                          </p>
-                          {/* <div className="space-y-1 text-sm text-muted-foreground">
-                            <p>
-                              <strong>Created At:</strong>{" "}
-                              {selectedTeam?.createdAt}
-                            </p>
-                            <p>
-                              <strong>Last Updated:</strong>{" "}
-                              {selectedTeam?.updatedAt}
-                            </p>
-                            <p>
-                              <strong>Status:</strong> Active
-                            </p>
-                          </div> */}
                         </section>
-                        <SearchBox />
+                        <SearchBox
+                          //@ts-ignore
+                          teamId={selectedTeam?.id}
+                          userId={user.user_id}
+                        />
                         {/* ===== MEMBERS SECTION ===== */}
                         <section>
                           <h3 className="text-sm font-semibold mb-2">
@@ -250,18 +305,20 @@ const Page = () => {
                           </h3>
 
                           <div className="space-y-2">
-                            {selectedTeam?.members?.length ? (
-                              selectedTeam.members.map((member: any) => (
+                            {members && members.length > 0 ? (
+                              members.map((member: any) => (
                                 <div
-                                  key={member.id}
+                                  key={member.user_id}
                                   className="flex items-center justify-between p-2 border rounded-lg"
                                 >
                                   <div className="flex items-center gap-3">
-                                    <img
-                                      src={member.avatar}
-                                      alt={member.name}
-                                      className="w-8 h-8 rounded-full"
-                                    />
+                                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                      <span className="text-xs">
+                                        {member.name
+                                          ?.charAt(0)
+                                          ?.toUpperCase() || "U"}
+                                      </span>
+                                    </div>
                                     <div>
                                       <p className="text-sm font-medium">
                                         {member.name}
@@ -271,17 +328,29 @@ const Page = () => {
                                       </p>
                                     </div>
                                   </div>
-
-                                  <Button variant="ghost" size="sm">
-                                    Remove
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      deleteMember.mutate({
+                                        teamId: selectedTeam.id,
+                                        userId: member.user_id,
+                                      })
+                                    }
+                                    disabled={deleteMember.isPending}
+                                  >
+                                    {member.id}id
+                                    {deleteMember.isPending
+                                      ? "Removing..."
+                                      : "Remove"}
                                   </Button>
                                 </div>
                               ))
                             ) : (
                               <p className="text-sm text-muted-foreground">
-                                No members found.
+                                No members found
                               </p>
-                            )}{" "}
+                            )}
                           </div>
                         </section>
                       </div>

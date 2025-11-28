@@ -7,6 +7,7 @@ import inviteRouter from './Interfaces/http/Routes/Invites.routes';
 import rateLimit from 'express-rate-limit';
 import taskrouter from './Interfaces/http/Routes/task.routes';
 import teamrouter from './Interfaces/http/Routes/Team.routes';
+import memberRouter from './Interfaces/http/Routes/memebers.routes';
 import cors from "cors";
 import cookieParser from 'cookie-parser'
 const app = express();
@@ -20,6 +21,7 @@ const limmiter = rateLimit({
 app.use(express.json());
 app.use(cookieParser())
 app.use(cors());
+app.use('/api/v1/members/',memberRouter)
 app.use('/api/v1/auth/', authrouter)
 app.use('/api/v1/tasks/', taskrouter);
 app.use('/api/v1/users/', userRouter);
