@@ -27,19 +27,37 @@ const SearchBox = ({ teamId, userId }: { teamId: string; userId: string }) => {
           withCredentials: true,
         });
         console.log(res);
-        setSuggestions(res.data); // إذا res.data عبارة عن Member[]
+
+        // Fetch pending invites for each suggestion
+        const suggestionsWithStatus = await Promise.all(
+          res.data.map(async (suggestion: Seg) => {
+            try {
+              const pendingRes = await api.get(
+                `/invites/pending/${teamId}/${suggestion.id}`,
+                {
+                  withCredentials: true,
+                }
+              );
+              return {
+                ...suggestion,
+                inviteStatus: pendingRes.data?.status || null,
+              };
+            } catch (error) {
+              return { ...suggestion, inviteStatus: null };
+            }
+          })
+        );
+
+        setSuggestions(suggestionsWithStatus);
         setShowSuggestions(true);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
         setSuggestions([]);
       }
     };
-
-    // 🔹 debounce: تأجيل الاستدعاء 300ms بعد آخر كتابة
     const timeoutId = setTimeout(fetchSuggestions, 300);
-
-    return () => clearTimeout(timeoutId); // تنظيف أي timeout سابق
-  }, [query]);
+    return () => clearTimeout(timeoutId);
+  }, [query, teamId]);
 
   console.log(query);
   console.log(showSuggestions);
@@ -99,26 +117,45 @@ const SearchBox = ({ teamId, userId }: { teamId: string; userId: string }) => {
       />
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg transition-transform shadow-lg mt-1 max-h-60 overflow-y-auto z-10">
-          {suggestions.map((suggestion: Seg) => (
+          {suggestions.map((suggestion: Seg & { inviteStatus?: string }) => (
             <div
               key={suggestion.id}
               className="px-4 flex justify-between py-2 hover:bg-gray-100 cursor-pointer transition-colors duration-150"
-              //@ts-ignore
-              onClick={() => handleSuggestionClick(suggestion)}
+              onClick={() => handleSuggestionClick(suggestion.username)}
             >
-              {suggestion.username}
+              <div className="flex flex-col">
+                <span>{suggestion.username}</span>
+                <span className="text-xs text-gray-500">
+                  {suggestion.email}
+                </span>
+              </div>
               <button
-                className="text-white hover:bg-amber-300 hover:text-black bg-black p-1 transition-colors rounded"
-                onClick={() =>
-                  inviteMutation.mutate({
-                    teamId: teamId,
-                    invitedUserId: suggestion.id,
-                    role: "member",
-                    invitedBy: userId,
-                  })
+                className={`px-3 py-1 rounded transition-colors ${
+                  suggestion.inviteStatus === "pending"
+                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    : "bg-black text-white hover:bg-amber-300 hover:text-black"
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (suggestion.inviteStatus !== "pending") {
+                    inviteMutation.mutate({
+                      teamId: teamId,
+                      invitedUserId: suggestion.id,
+                      role: "member",
+                      invitedBy: userId,
+                    });
+                  }
+                }}
+                disabled={
+                  suggestion.inviteStatus === "pending" ||
+                  inviteMutation.isPending
                 }
               >
-                {inviteMutation.isPending ? "Pending..." : "Invite"}{" "}
+                {suggestion.inviteStatus === "pending"
+                  ? "Invited"
+                  : inviteMutation.isPending
+                  ? "Sending..."
+                  : "Invite"}
               </button>
             </div>
           ))}

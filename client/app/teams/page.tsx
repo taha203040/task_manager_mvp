@@ -244,6 +244,7 @@ const Page = () => {
                       key={team.id}
                       className="hover:shadow-md transition"
                     >
+                      <strong>{team.id}</strong>
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div className="flex-1 pr-2">
@@ -296,6 +297,7 @@ const Page = () => {
                         <SearchBox
                           //@ts-ignore
                           teamId={selectedTeam?.id}
+                          //@ts-ignore
                           userId={user.user_id}
                         />
                         {/* ===== MEMBERS SECTION ===== */}
