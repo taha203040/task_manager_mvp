@@ -51,8 +51,8 @@ export class GetInvitesByTeamIdUseCase {
 
 export class GetInvitesByUserIdUseCase {
     constructor(private readonly inviteRepository: ITeamInviteRepository) {}
-    async execute(userId: string): Promise<TeamInvite[]> {
-        return await this.inviteRepository.findByUserId(userId);
+    async execute(user_id: string): Promise<TeamInvite[]> {
+        return await this.inviteRepository.findByUserId(user_id);
     }
 }
 

@@ -3,6 +3,7 @@ import * as invite from '../../../Application/use-cases/Team-usecases/Invite.use
 import { SqlTeamInviteRepository } from "../../../Infrastructure/Repositories/Sql/Invitation";
 import { Request, Response } from 'express';
 import { MemberController } from "./Member.controller";
+import { equal } from "assert";
 
 // Initialize repository and use cases
 export function createInviteUseCases(pool: any) {
@@ -91,18 +92,28 @@ export class InvitationController {
     // Get invitations by user ID
     static async getInvitesByUserId(req: Request, res: Response): Promise<void> {
         try {
-            const { userId } = req.params;
-            if (!userId) {
-                res.status(404).json({ msg: 'There is no user with this account' });
+            //@ts-ignore
+            if (!req.user?.user_id) {
+                res.status(401).json({ msg: "Unauthorized" });
                 return
             }
-            const invites = await InvitationController.useCases.getByUserId.execute(userId);
+            //@ts-ignore
+
+            const user_id = req.user.user_id;
+            //@ts-ignore
+
+            const invites = await InvitationController.useCases
+                .getByUserId
+                .execute(user_id);
 
             res.status(200).json(invites);
-        } catch (error) {
-            res.status(500).json({ error: 'Internal server error' });
+
+        } catch (error: any) {
+            console.error(error);
+            res.status(500).json({ error: "Internal server error" });
         }
     }
+
 
     // Update invitation status (accept / reject)
     static async handleInviteResponse(req: Request, res: Response): Promise<void> {

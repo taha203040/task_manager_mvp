@@ -9,7 +9,7 @@ export interface ITeamInviteRepository {
     create(invite: TeamInvite): Promise<TeamInvite>;
     findById(id: string): Promise<TeamInvite | null>;
     findByTeamId(teamId: string): Promise<TeamInvite[]>;
-    findByUserId(email: string): Promise<TeamInvite[]>;
+    findByUserId(user_id: string): Promise<TeamInvite[]>;
     findPendingInvite(teamId: string, email: string): Promise<TeamInvite | null>; // optional but recommended
     updateStatus(id: string, status: InviteStatus): Promise<TeamInvite | null>;
     delete(id: string): Promise<boolean>;

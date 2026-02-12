@@ -16,6 +16,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
         }
         // @ts-ignore
         req.user = decoded as any
+        
         //@ts-ignore
         // console.log(req.user)
         // console.log('auth done')

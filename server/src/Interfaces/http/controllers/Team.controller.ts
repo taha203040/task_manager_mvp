@@ -42,7 +42,7 @@ export class TeamController {
             const teams = await teamUseCase.execute(userId);
             res.status(200).json(teams);
         } catch (err) {
-            console.error(err);
+            console.error('error',err);
             res.status(500).json({ error: "Server error" });
         }
     }
@@ -52,6 +52,7 @@ export class TeamController {
             const { id } = req.params;
             // @ts-ignore
             const { user_id } = req.user
+            console.log(user_id)
             console.log('the user', user_id, 'the id', id)
             if (!id || !user_id) {
                 return res.status(400).json({ error: "Team id and userId are required1" });

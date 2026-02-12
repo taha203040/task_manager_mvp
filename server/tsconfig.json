@@ -5,9 +5,7 @@
     "allowSyntheticDefaultImports": true,
     // File Layout
     "rootDir": "./src",
-    "typeRoots": ["./types", "./node_modules/@types"],
-    // "outDir": "./dist",
-
+    "typeRoots": ["./node_modules/@types", "./src/types"], // "outDir": "./dist",
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",

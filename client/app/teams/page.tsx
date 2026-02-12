@@ -51,7 +51,7 @@ const Page = () => {
   // 🔹 Fetch Teams
   const fetchTeams = async () => {
     const res = await api.get("/teams/", { withCredentials: true });
-    return res.data;
+    return res.data; 
   };
 
   const [user, setUser] = useState(null);
