@@ -1,6 +1,7 @@
 import { TeamMember } from "../../../Domain/Entities/Team";
 import { TeamMemberRepo } from "../../../Application/Repositories/TeamRepo";
 import { Pool } from "pg";
+import { InvitationWithTeamDTO } from "../../../Domain/Entities/Invites";
 // import { Team } from "../../../Domain/Entities/Team";
 // import { User } from "../../../Domain/Entities/User_Entities";
 
@@ -98,7 +99,7 @@ export class SqlMemberRepository implements TeamMemberRepo {
       ORDER BY username
       LIMIT 20
     `;
-    console.log('is',searchTerm)
+    console.log('is', searchTerm)
     const result = await this.pool.query(query, [`%${searchTerm}%`]);
     return result.rows.map(row => ({
       id: row.id,
@@ -106,4 +107,20 @@ export class SqlMemberRepository implements TeamMemberRepo {
       email: row.email
     }));
   }
+  async getByUserIdWithTeam(userId: string): Promise<InvitationWithTeamDTO[] | any> {
+    const query = `
+      SELECT tm.team_id, tm.user_id, tm.role, tm.joined_at,
+             t.name as team_name, t.description as team_description, t.created_at as team_created_at
+      FROM team_members tm
+      JOIN teams t ON tm.team_id = t.id
+      WHERE tm.user_id = $1
+      ORDER BY tm.joined_at
+    `;
+
+    const result = await this.pool.query(query, [userId]);
+
+  }
 }
+
+
+

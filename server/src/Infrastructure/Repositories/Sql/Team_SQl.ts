@@ -1,6 +1,7 @@
 import { TeamRepo } from "../../../Application/Repositories/TeamRepo";
 import { Pool } from "pg";
 import { Team } from "../../../Domain/Entities/Team";
+import { InvitationWithTeamDTO } from "../../../Domain/Entities/Invites";
 
 export class TeamRepoPostGress implements TeamRepo {
     constructor(private pool: Pool) {
@@ -40,6 +41,36 @@ export class TeamRepoPostGress implements TeamRepo {
             created_by: row.created_by,
 
         };
+    }
+    async getByUserIdWithTeam(userId: string): Promise<InvitationWithTeamDTO[]> {
+        const result = await this.pool.query(
+            `
+        SELECT 
+            i.id,
+            i.role,
+            i.status,
+            i.invited_by,
+            t.id AS team_id,
+            t.name AS team_name
+        FROM invitations i
+        JOIN teams t ON i.team_id = t.id
+        WHERE i.invited_user_id = $1
+        `,
+            [userId]
+        );
+
+        if (result.rows.length === 0) return [];
+
+        return result.rows.map(row => ({
+            id: row.id,
+            role: row.role,
+            status: row.status,
+            invited_by: row.invited_by,
+            team: {
+                id: row.team_id,
+                name: row.team_name
+            }
+        }));
     }
 
     async delete(id: string, userId: string): Promise<void> {

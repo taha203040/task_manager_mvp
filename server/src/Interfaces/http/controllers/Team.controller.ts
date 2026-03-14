@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import { Team } from "../../../Domain/Entities/Team";
-import { GetTeamById, GetTeamsByUser, UpdateTeam, DeleteTeam, CreateTeam } from "../../../Application/use-cases/Team-usecases/Team.usecase";
+import { GetTeamById, GetTeamsByUser, UpdateTeam, DeleteTeam, CreateTeam, GetInvitesByUserIdUseCase } from "../../../Application/use-cases/Team-usecases/Team.usecase";
 import pool from "../../../Config/db";
 import { TeamRepoPostGress } from "../../../Infrastructure/Repositories/Sql/Team_SQl";
 
 const teamRepo = new TeamRepoPostGress(pool);
-
 export class TeamController {
     static async createTeam(req: Request, res: Response) {
         try {
@@ -30,7 +29,6 @@ export class TeamController {
             res.status(500).json({ error: "Server error1" });
         }
     }
-
     static async getTeamsByUser(req: Request, res: Response) {
         try {
             // @ts-ignore
@@ -42,7 +40,7 @@ export class TeamController {
             const teams = await teamUseCase.execute(userId);
             res.status(200).json(teams);
         } catch (err) {
-            console.error('error',err);
+            console.error('error', err);
             res.status(500).json({ error: "Server error" });
         }
     }

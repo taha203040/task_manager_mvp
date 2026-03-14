@@ -17,3 +17,14 @@ export class TeamInvite {
         this.created_at = data.created_at || new Date();
     }
 }
+
+export interface InvitationWithTeamDTO {
+    id: string;
+    role: string;
+    status: string;
+    invited_by: string;
+    team: {
+        id: string;
+        name: string;
+    };
+}

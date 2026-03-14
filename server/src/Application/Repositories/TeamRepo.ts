@@ -1,3 +1,4 @@
+import { InvitationWithTeamDTO } from "../../Domain/Entities/Invites";
 import { Team, TeamMember } from "../../Domain/Entities/Team";
 
 export interface TeamRepo {
@@ -14,4 +15,5 @@ export interface TeamMemberRepo {
     updateRole(teamId: string, userId: string, role: string): Promise<void>;
     delete(teamId: string, userId: string): Promise<void>;
     isMember(teamId: string, userId: string): Promise<boolean>;
+    getByUserIdWithTeam(userId: string): Promise<InvitationWithTeamDTO[]>;
 }

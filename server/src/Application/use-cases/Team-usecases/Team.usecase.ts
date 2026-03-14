@@ -1,5 +1,6 @@
+import { InvitationWithTeamDTO } from "../../../Domain/Entities/Invites";
 import { Team } from "../../../Domain/Entities/Team";
-import { TeamRepo } from "../../Repositories/TeamRepo";
+import { TeamMemberRepo, TeamRepo } from "../../Repositories/TeamRepo";
 
 export class CreateTeam {
     constructor(private teamRepo: TeamRepo) { }
@@ -14,7 +15,17 @@ export class GetTeamsByUser {
         return await this.teamRepo.getTeamsByUser(userId);
     }
 }
+export class GetInvitesByUserIdUseCase {
+    constructor(private invitationRepository: TeamMemberRepo) { }
 
+    async execute(userId: string): Promise<InvitationWithTeamDTO[]> {
+        if (!userId) {
+            throw new Error("User ID is required");
+        }
+
+        return await this.invitationRepository.getByUserIdWithTeam(userId);
+    }
+}
 export class GetTeamById {
     constructor(private teamRepo: TeamRepo) { }
     async execute(id: string, userId: string): Promise<Team | null> {

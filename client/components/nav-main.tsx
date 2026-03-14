@@ -27,6 +27,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+// import { useQuery } from "@tanstack/react-query";
 export function NavMain({
   items,
 }: {
@@ -38,12 +40,49 @@ export function NavMain({
 }) {
   const router = useRouter();
   let count = 19;
-  const fetchInvites = async () => {
-    const res = await api.get("/invites/user/", {
-      withCredentials: true,
-    });
-    return res.data;
-  };
+  const [data, setData] = useState<
+    {
+      id: string;
+      team_id: string;
+      invited_by: string;
+      name?: string;
+    }[]
+  >([]);
+  useEffect(() => {
+    const fetchInvites = async () => {
+      try {
+        const res = await api.get("/invites/user/", {
+          withCredentials: true,
+        });
+        if (res.data) {
+          const invitesWithTeamData = await Promise.all(
+            res.data.map(async (invite: any) => {
+              try {
+                const teamRes = await api.get(`/teams/${invite.id}`, {
+                  withCredentials: true,
+                });
+                return {
+                  ...invite,
+                  team_name: teamRes.data.name || "Unknown Team",
+                };
+              } catch (error) {
+                console.error(`Failed to fetch team ${invite.team_id}:`, error);
+                return {
+                  ...invite,
+                  team_name: "Unknown Team",
+                };
+              }
+            })
+          );
+          setData(invitesWithTeamData);
+          console.log("Fetched invites with team data:", invitesWithTeamData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch invites:", error);
+      }
+    };
+    fetchInvites();
+  }, []);
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -70,38 +109,45 @@ export function NavMain({
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuContent align="end" className="w-80">  
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem className="flex flex-col items-start gap-2 p-4 cursor-default">
-                    <div className="flex w-full items-center justify-between">
-                      <span className="font-semibold">Project Invitation</span>
-                      <span className="text-xs text-muted-foreground">
-                        2 min ago
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      You've been invited to join the "Design System" project
-                      team.
-                    </p>
-                    <div className="flex w-full gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 bg-white  hover:bg-green-50"
-                      >
-                        <IconCheck color="green" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <IconX color="red" />
-                      </Button>
-                    </div>
-                  </DropdownMenuItem>
+                  {data.map((invitation, i) => (
+                    <DropdownMenuItem
+                      key={invitation.id}
+                      className="flex flex-col items-start gap-2 p-4 cursor-default"
+                    >
+                      <div className="flex w-full items-center justify-between">
+                        <span className="font-semibold">
+                          {invitation.name || "Unknown Team"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Invited by: {invitation.invited_by}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        You've been invited to join the "
+                        {invitation.name || "Unknown Team"}" team.
+                      </p>
+                      <div className="flex w-full gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 bg-white hover:bg-green-50"
+                        >
+                          <IconCheck color="green" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <IconX color="red" />
+                        </Button>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>

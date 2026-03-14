@@ -10,7 +10,7 @@ const memberRouter = Router();
 memberRouter.get('/t/:teamId', authenticate, MemberController.getTeamMembersByTeamId);
 
 // Get the result
-memberRouter.get('/search/', authenticate, MemberController.searchUsers)
+// memberRouter.get('/search/', authenticate, MemberController.searchUsers)
 // Get team members by user ID
 memberRouter.get('/u/:userId', authenticate, MemberController.getTeamMembersByUserId);
 
