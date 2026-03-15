@@ -39,43 +39,51 @@ export function NavMain({
   }[];
 }) {
   const router = useRouter();
-  let count = 19;
+  const [count, setCount] = useState<number>(0);
   const [data, setData] = useState<
     {
       id: string;
       team_id: string;
       invited_by: string;
       name?: string;
+      role: string;
+      status: string;
     }[]
   >([]);
   useEffect(() => {
+    //  fetch invites /invites/user/
+    //
     const fetchInvites = async () => {
       try {
         const res = await api.get("/invites/user/", {
           withCredentials: true,
         });
+        console.log(res.data);
         if (res.data) {
-          const invitesWithTeamData = await Promise.all(
-            res.data.map(async (invite: any) => {
-              try {
-                const teamRes = await api.get(`/teams/${invite.id}`, {
-                  withCredentials: true,
-                });
-                return {
-                  ...invite,
-                  team_name: teamRes.data.name || "Unknown Team",
-                };
-              } catch (error) {
-                console.error(`Failed to fetch team ${invite.team_id}:`, error);
-                return {
-                  ...invite,
-                  team_name: "Unknown Team",
-                };
-              }
-            })
-          );
-          setData(invitesWithTeamData);
-          console.log("Fetched invites with team data:", invitesWithTeamData);
+          // const invitesWithTeamData = await Promise.all(
+          //   res.data.map(async (invite: any) => {
+          //     try {
+          //       const teamRes = await api.get(`/teams/${invite.id}`, {
+          //         withCredentials: true,
+          //       });
+          //       console.log(teamRes);
+          //       return {
+          //         ...invite,
+          //         team_name: teamRes.data.name || "Unknown",
+          //       };
+          //     } catch (error) {
+          //       console.error(`Failed to fetch team ${invite.team_id}:`, error);
+          //       return {
+          //         ...invite,
+          //         team_name: "Unknown Team",
+          //       };
+          //     }
+          //   })
+          // );
+          setCount(data.length);
+          setData(res.data);
+          // console.log(data);
+          // console.log("Fetched invites with team data:", res.data);
         }
       } catch (error) {
         console.error("Failed to fetch invites:", error);
@@ -83,6 +91,23 @@ export function NavMain({
     };
     fetchInvites();
   }, []);
+  console.log("data");
+
+  const handleResponse = async (id: string, action: "rejected" | "accepted") => {
+    try {
+      console.log("id", id);
+      console.log("action", action);
+      const res = await api.patch(
+        `/invites/${id}/respond/`,
+        { action },
+        { withCredentials: true }
+      );
+      console.log(res);
+    } catch (error) {
+      console.error(`Failed to ${action} invitation:`, error);
+      console.log(error);
+    }
+  };
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -105,11 +130,11 @@ export function NavMain({
                   <IconMail />
                   {/* <IconMail /> */}
                   <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[#fff] text-xs text-destructive-foreground">
-                    {count > 0 && (count > 9 ? "+9" : count)}
+                    {count > 9 ? "+9" : count}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">  
+              <DropdownMenuContent align="end" className="w-80">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
@@ -131,20 +156,38 @@ export function NavMain({
                         {invitation.name || "Unknown Team"}" team.
                       </p>
                       <div className="flex w-full gap-2 pt-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 bg-white hover:bg-green-50"
-                        >
-                          <IconCheck color="green" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <IconX color="red" />
-                        </Button>
+                        {invitation.status === "accepted" ? (
+                          <span className="text-green-600 text-sm font-medium">
+                            Accepted
+                          </span>
+                        ) : invitation.status === "rejected" ? (
+                          <span className="text-red-600 text-sm font-medium">
+                            Rejected
+                          </span>
+                        ) : (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 bg-white hover:bg-green-50"
+                              onClick={() =>
+                                handleResponse(invitation.id, "accepted")
+                              }
+                            >
+                              <IconCheck color="green" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() =>
+                                handleResponse(invitation.id, "rejected")
+                              }
+                            >
+                              <IconX color="red" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </DropdownMenuItem>
                   ))}
