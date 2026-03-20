@@ -1,0 +1,49 @@
+services:
+  nginx :
+    image: nginx:alpine
+    container_name: nginx_gw
+    expose:
+      - 80
+    volumes:
+      - ./gateway/etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on :
+    - client
+    - server 
+    networks:
+      - app-network
+  client:
+    build : ./client
+
+    # image: node:alpine
+    expose:
+      - 3000
+    command : npm run dev 
+    develop:
+      watch : 
+      - path: ./client/
+        action: sync
+        target: ./server
+
+      - path: ./client/package*.json
+        action: rebuild
+    networks:
+      - app-network
+  server:
+    build : ./server
+    # image: node:alpine
+    expose:
+      - 4000
+    command : npm run dev 
+    develop:
+      watch : 
+      - path: ./server/src
+        action: sync
+        target: ./server
+      - path: ./server/package*.json
+        action: rebuild
+
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
