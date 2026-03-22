@@ -9,6 +9,7 @@ import taskrouter from './Interfaces/http/Routes/task.routes';
 import teamrouter from './Interfaces/http/Routes/Team.routes';
 import memberRouter from './Interfaces/http/Routes/memebers.routes';
 import cors from "cors";
+import config from './Config/envs';
 import cookieParser from 'cookie-parser'
 const app = express();
 const limmiter = rateLimit({
@@ -21,13 +22,13 @@ const limmiter = rateLimit({
 app.use(express.json());
 app.use(cookieParser())
 app.use(cors());
-app.use('/api/v1/members/',memberRouter)
+app.use('/api/v1/members/', memberRouter)
 app.use('/api/v1/auth/', authrouter)
 app.use('/api/v1/tasks/', taskrouter);
 app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)
-const port = 4000
+const PORT = config.app.port
 
 console.log('serer running')
 app.get('/', (req: Request, res: Response) => {
@@ -36,4 +37,4 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 
-app.listen(port, () => console.log('Server running'));
+app.listen(PORT, () => console.log('Server running'));
