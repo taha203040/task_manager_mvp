@@ -5,7 +5,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const config = {
     app: {
-        port: parseInt(process.env.PORT || "3000", 10),
+        port: parseInt(process.env.PORT || "4000", 10),
         env: process.env.NODE_ENV || "development",
     },
     db: {

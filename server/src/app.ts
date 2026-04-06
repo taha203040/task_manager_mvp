@@ -37,4 +37,4 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 
-app.listen(PORT, () => console.log('Server running'));
+app.listen(PORT, () => console.log('Server running',PORT));
