@@ -8,6 +8,13 @@ export class CreateTeamMemberUseCase {
         return this.teamMemberRepo.create(teamId, userId, role);
     }
 }
+export class SearchUsersUsecase {
+    constructor(private teamMemberRepo: TeamMemberRepo) {}
+
+    async execute(username:string): Promise<{ id: string; username: string; email: string }[]> {
+        return this.teamMemberRepo.searchUsers(username);
+    }
+}
 
 export class GetTeamMembersByTeamIdUseCase {
     constructor(private teamMemberRepo: TeamMemberRepo) {}

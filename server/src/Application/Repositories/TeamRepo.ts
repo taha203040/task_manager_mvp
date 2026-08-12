@@ -16,4 +16,5 @@ export interface TeamMemberRepo {
     delete(teamId: string, userId: string): Promise<void>;
     isMember(teamId: string, userId: string): Promise<boolean>;
     getByUserIdWithTeam(userId: string): Promise<InvitationWithTeamDTO[]>;
+    searchUsers (username:string) : Promise<{ id: string; username: string; email: string }[]>
 }

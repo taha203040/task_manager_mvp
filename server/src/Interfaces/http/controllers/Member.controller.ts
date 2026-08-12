@@ -11,24 +11,27 @@ export function Memebers(pool: any) {
         getByUserId: new members.GetTeamMembersByUserIdUseCase(repo),
         updateRole: new members.UpdateTeamMemberRoleUseCase(repo),
         delete: new members.DeleteTeamMemberUseCase(repo),
-        checkMembership: new members.CheckTeamMembershipUseCase(repo)
+        checkMembership: new members.CheckTeamMembershipUseCase(repo),
+        searchUsers :new members.SearchUsersUsecase(repo)
     }
 }
 // Controller methods
 export class MemberController {
     private static useCases = Memebers(pool)
     // Create a new team member
-    // static async searchUsers(req: any, res: any): Promise<void> {
-    //     try {
-    //         const { q: searchTerm } = req.query;
-    //         console.log(req.query)
-    //         console.log('cs', searchTerm)
-    //         const users = await this.useCases..searchUsers(searchTerm);
-    //         res.status(200).json(users);
-    //     } catch (error) {
-    //         res.status(500).json({ error: error });
-    //     }
-    // }
+    static async searchUsers(req: any, res: any): Promise<void> {
+        try {
+            const { q: searchTerm } = req.query;
+            console.log(req.query)
+            console.log('cs', searchTerm)
+            const users = await MemberController.useCases.searchUsers.execute(searchTerm);
+            console.log('users',users)
+            res.status(200).json(users);
+        } catch (error) {
+            console.log({err:error})
+            res.status(500).json({ error: error });
+        }
+    }
     static async createTeamMember(teamId: string, userId: string, role: string): Promise<any> {
         try {
             const teamMember = await MemberController.useCases.create.execute(teamId, userId, role);
