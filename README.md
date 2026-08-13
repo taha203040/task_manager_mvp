@@ -1,33 +1,29 @@
 # Task Manager
 
-A scalable task management system designed to demonstrate modern backend architecture, clean code principles, event-driven communication, and reliable distributed processing.
+A full-stack Task Management application built with **Clean Architecture** and designed with a strong focus on maintainability, separation of concerns, and scalable code organization.
 
-The project focuses not only on CRUD operations, but also on **scalability, maintainability, reliability, idempotency, asynchronous processing, and fault tolerance**.
+The project allows users to create and manage teams, invite members, search for users, and manage tasks through a structured backend architecture.
 
 ---
 
 ## 🚀 Features
 
-* User authentication and authorization
-* Team management
-* Task creation and assignment
-* Task status management
-* Invitations and team membership
+* User authentication
+* Team creation and management
+* Team member management
 * User search
-* Notifications
+* Team invitations
+* Accept / decline invitations
+* Task creation and management
+* Task assignment
+* Task status management
 * RESTful API
-* Clean Architecture
-* Event-driven architecture
-* Kafka-based asynchronous processing
-* Redis caching and fast-access operations
-* Idempotent event processing
-* Dead Letter Queue (DLQ)
-* Retry mechanisms
-* PostgreSQL persistence
-* Dockerized development environment
 * Centralized error handling
 * Input validation
-* Structured application layers
+* Clean Architecture
+* Repository Pattern
+* Use Case Pattern
+* Dependency Injection
 
 ---
 
@@ -35,36 +31,51 @@ The project focuses not only on CRUD operations, but also on **scalability, main
 
 The backend follows **Clean Architecture** principles.
 
+The main goal is to keep business logic independent from frameworks, databases, and external services.
+
 ```text
-┌─────────────────────────────────────────────┐
-│                 Presentation                │
-│                                             │
-│       Controllers / Routes / Middleware     │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│                Application                  │
-│                                             │
-│          Use Cases / DTOs / Services        │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│                  Domain                     │
-│                                             │
-│        Entities / Business Rules            │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│               Infrastructure                │
-│                                             │
-│ PostgreSQL / Redis / Kafka / External APIs  │
-└─────────────────────────────────────────────┘
+                 ┌─────────────────────┐
+                 │    Presentation     │
+                 │                     │
+                 │ Controllers / HTTP  │
+                 │ Routes / Middleware │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │     Application     │
+                 │                     │
+                 │      Use Cases      │
+                 │        DTOs         │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │       Domain        │
+                 │                     │
+                 │ Entities / Contracts│
+                 │   Business Rules    │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │   Infrastructure    │
+                 │                     │
+                 │ PostgreSQL / Redis  │
+                 │ Repositories / ORM  │
+                 └─────────────────────┘
 ```
 
-The dependency direction points inward, allowing business logic to remain independent from frameworks and infrastructure.
+### Dependency Rule
+
+Dependencies point toward the inner layers.
+
+```text
+Infrastructure ──────► Application ──────► Domain
+Presentation  ───────► Application ──────► Domain
+```
+
+The domain and application layers do not depend directly on frameworks or database implementations.
 
 ---
 
@@ -89,255 +100,220 @@ src/
 │   │   ├── repositories/
 │   │   └── migrations/
 │   │
-│   ├── kafka/
-│   │   ├── producers/
-│   │   └── consumers/
-│   │
-│   └── redis/
+│   └── services/
 │
 ├── presentation/
 │   ├── controllers/
 │   ├── routes/
-│   └── middlewares/
+│   └── middleware/
 │
 ├── config/
 │
 └── main.ts
 ```
 
+The exact structure may vary depending on the feature, but the architectural boundaries remain the same.
+
 ---
 
-## 🔄 Event-Driven Architecture
+## 🧩 Layers
 
-The system uses Kafka for asynchronous communication between components.
+### Domain
+
+The domain contains the core business concepts and contracts.
+
+```text
+Domain
+├── Entities
+├── Repository Interfaces
+└── Domain Errors
+```
+
+The domain does not know about:
+
+* Express
+* PostgreSQL
+* Redis
+* HTTP
+* ORM implementations
+
+This keeps the core business logic independent of infrastructure.
+
+---
+
+### Application
+
+The application layer contains the application's use cases.
+
+Examples:
+
+```text
+CreateTeam
+SearchUsers
+SendInvitation
+AcceptInvitation
+DeclineInvitation
+CreateTask
+UpdateTask
+DeleteTask
+```
+
+A use case coordinates the business operation without knowing how data is actually stored.
 
 Example:
 
-```text
-User Action
-     │
-     ▼
-API
-     │
-     ▼
-Use Case
-     │
-     ├──────────────► PostgreSQL
-     │
-     ▼
-Kafka Producer
-     │
-     ▼
-Kafka Topic
-     │
-     ▼
-Kafka Consumer
-     │
-     ├──────────────► Redis
-     │
-     └──────────────► PostgreSQL
-```
+```typescript
+export class SearchUsersUseCase {
+    constructor(
+        private readonly teamMemberRepo: TeamMemberRepo
+    ) {}
 
-This allows expensive or asynchronous operations to be removed from the main HTTP request lifecycle.
-
----
-
-## 📨 Kafka
-
-Kafka is used for asynchronous event processing.
-
-Example event:
-
-```json
-{
-  "eventId": "uuid",
-  "type": "task.created",
-  "timestamp": "2026-08-14T00:00:00.000Z",
-  "payload": {
-    "taskId": "123",
-    "userId": "456"
-  }
+    async execute(username: string) {
+        return this.teamMemberRepo.searchUsers(username);
+    }
 }
 ```
 
-### Consumer Groups
-
-Consumers are organized using Kafka consumer groups.
-
-```text
-                Kafka
-                  │
-        ┌─────────┴─────────┐
-        ▼                   ▼
-    Consumer A          Consumer B
-        │                   │
-        └──── Consumer Group┘
-```
-
-Kafka distributes partitions between consumers belonging to the same group.
+The use case depends on a repository abstraction rather than directly querying the database.
 
 ---
 
-## ♻️ Idempotent Processing
+### Infrastructure
 
-Distributed systems may deliver the same event more than once.
-
-The application therefore uses an idempotency mechanism.
-
-```text
-Incoming Event
-      │
-      ▼
-Check eventId in Redis
-      │
- ┌────┴────┐
- │         │
-Exists   Not Found
- │         │
- ▼         ▼
-Skip     Process
-           │
-           ▼
-      PostgreSQL
-```
-
-Redis provides a fast-path check while PostgreSQL provides a database-level consistency backstop.
+Infrastructure contains implementations of external concerns.
 
 For example:
 
 ```text
-Redis
-  │
-  └── processed:event-id
-
-PostgreSQL
-  │
-  └── processed_events
+Infrastructure
+│
+├── PostgreSQL
+├── Repository Implementations
+├── Redis
+└── External Services
 ```
 
-This prevents the same event from applying its business operation multiple times.
+For example, the application may depend on:
+
+```typescript
+interface TeamMemberRepo {
+    searchUsers(username: string): Promise<User[]>;
+}
+```
+
+while infrastructure provides the implementation:
+
+```typescript
+class TeamMemberRepository implements TeamMemberRepo {
+    async searchUsers(username: string) {
+        // PostgreSQL implementation
+    }
+}
+```
+
+This allows the database implementation to change without rewriting the use case.
 
 ---
 
-## 💀 Dead Letter Queue
+### Presentation
 
-Events that cannot be processed successfully after the configured retry attempts are moved to a Dead Letter Queue.
-
-```text
-Kafka Topic
-     │
-     ▼
- Consumer
-     │
-     ▼
-   Retry
-  /  |  \
- 1   2   3
-     │
-     ▼
-  Failure
-     │
-     ▼
-    DLQ
-```
-
-Example topics:
+The presentation layer handles HTTP-specific concerns.
 
 ```text
-task.events
-task.events.dlq
+Request
+   │
+   ▼
+Route
+   │
+   ▼
+Controller
+   │
+   ▼
+Use Case
+   │
+   ▼
+Repository
 ```
 
-The DLQ allows failed events to be investigated and reprocessed without blocking the main event stream.
+Controllers are intentionally kept thin and delegate business operations to application use cases.
 
 ---
 
-## 🔁 Retry Strategy
+## 🔌 Repository Pattern
 
-Transient failures are retried before sending an event to the DLQ.
+Repositories provide an abstraction between the application and persistence layer.
 
 ```text
-Process Event
-     │
-     ├── Success ─────► Done
-     │
-     └── Failure
-           │
-           ▼
-         Retry
-           │
-           ├── Success ─────► Done
-           │
-           └── Max retries
-                    │
-                    ▼
-                   DLQ
+             Application
+                  │
+                  ▼
+        Repository Interface
+                  │
+                  ▼
+       Repository Implementation
+                  │
+                  ▼
+             PostgreSQL
 ```
 
-Retries are intended for temporary failures such as:
-
-* Database connection failures
-* Redis temporarily unavailable
-* Network errors
-* Temporary service failures
-
-Permanent business errors should not be endlessly retried.
+This follows the **Dependency Inversion Principle** and makes the application easier to test and maintain.
 
 ---
 
-## ⚡ Redis
+## 🎯 Use Case Pattern
 
-Redis is used for fast-access data and distributed application concerns.
+Each important business operation is represented by a dedicated use case.
 
-Potential use cases include:
-
-* Caching
-* Idempotency
-* Rate limiting
-* Temporary state
-* Session-related data
-
-Example:
+For example:
 
 ```text
-Application
+use-cases/
+│
+├── create-team/
+├── search-users/
+├── send-invitation/
+├── accept-invitation/
+├── decline-invitation/
+├── create-task/
+├── update-task/
+└── delete-task/
+```
+
+This avoids placing business logic directly inside controllers or routes.
+
+---
+
+## 🛡️ Error Handling
+
+The application uses centralized error handling.
+
+Instead of every controller manually handling every possible error:
+
+```text
+Controller
      │
      ▼
-   Redis
+   Use Case
      │
-     ├── Cache
-     ├── Idempotency
-     └── Rate Limits
+     ▼
+    Error
+     │
+     ▼
+Central Error Handler
+     │
+     ▼
+HTTP Response
 ```
 
----
-
-## 🗄️ PostgreSQL
-
-PostgreSQL is the primary relational database.
-
-Main entities include:
-
-```text
-User
-Team
-TeamMember
-Task
-Invitation
-ProcessedEvent
-```
-
-Relationships are modeled using relational constraints to maintain data integrity.
+This provides consistent API responses and keeps individual components focused on their responsibilities.
 
 ---
 
 ## 🔐 Authentication
 
-Authentication is handled through secure HTTP mechanisms.
+Authentication is separated from the application's business logic.
 
-The application separates authentication concerns from business logic through middleware and application services.
-
-Typical request flow:
+The request lifecycle follows approximately:
 
 ```text
 Client
@@ -345,60 +321,62 @@ Client
   ▼
 Authentication Middleware
   │
-  ├── Invalid ──► 401
-  │
   ▼
 Controller
   │
   ▼
 Use Case
+  │
+  ▼
+Repository
 ```
+
+Authentication-related concerns remain at the appropriate infrastructure/presentation boundaries rather than being mixed with domain logic.
 
 ---
 
-## 🛡️ Error Handling
+## 🗄️ Database
 
-The application uses centralized error handling rather than implementing response logic independently inside every controller.
+The application uses a relational database for persistent data.
+
+Main entities include:
 
 ```text
-Controller
-    │
-    ▼
-Use Case
-    │
-    ▼
-Error
-    │
-    ▼
-Central Error Handler
-    │
-    ▼
-HTTP Response
+User
+Team
+TeamMember
+Invitation
+Task
 ```
 
-This keeps controllers focused on handling HTTP concerns while application logic remains independent.
+Relationships between entities are enforced at the database level where appropriate.
 
 ---
 
 ## 📡 API
 
-The API follows REST principles.
+The backend exposes a RESTful API.
 
 Example endpoints:
 
 ```text
-POST   /auth/login
+Authentication
 POST   /auth/register
+POST   /auth/login
 
+Users
 GET    /users/search
 
+Teams
 GET    /teams
 POST   /teams
 GET    /teams/:id
 
-POST   /teams/:id/invites
+Invitations
 GET    /invites/user
+POST   /teams/:id/invites
 
+Tasks
 GET    /tasks
 POST   /tasks
 GET    /tasks/:id
@@ -406,56 +384,21 @@ PATCH  /tasks/:id
 DELETE /tasks/:id
 ```
 
-The exact endpoints may evolve as the application develops.
+The exact endpoints may evolve as the project develops.
 
 ---
 
-## 🐳 Docker
+## 🐳 Development
 
-The project can be run using Docker to provide consistent development infrastructure.
+The project can be run locally using the required development services.
 
-Typical services:
+### Install dependencies
 
-```text
-┌────────────────────────────┐
-│        Application         │
-└──────────────┬─────────────┘
-               │
-       ┌───────┼────────┐
-       ▼       ▼        ▼
-   PostgreSQL Redis    Kafka
+```bash
+npm install
 ```
 
-This makes the development environment reproducible and simplifies running infrastructure dependencies locally.
-
----
-
-## 🧪 Testing
-
-The project is designed to support different levels of testing:
-
-```text
-Unit Tests
-    │
-    ▼
-Use Cases / Domain Logic
-
-Integration Tests
-    │
-    ▼
-Database / Redis / Kafka
-
-End-to-End Tests
-    │
-    ▼
-HTTP API
-```
-
-The goal is to keep business logic highly testable by isolating it from infrastructure.
-
----
-
-## ⚙️ Environment Variables
+### Configure environment variables
 
 Create a `.env` file:
 
@@ -463,86 +406,52 @@ Create a `.env` file:
 NODE_ENV=development
 PORT=3000
 
-DATABASE_URL=postgresql://user:password@localhost:5432/task_manager
-
-REDIS_URL=redis://localhost:6379
-
-KAFKA_BROKERS=localhost:9092
-KAFKA_CLIENT_ID=task-manager
-KAFKA_GROUP_ID=task-manager-consumer
+DATABASE_URL=your_database_url
+REDIS_URL=your_redis_url
 ```
 
-Never commit real credentials or secrets to the repository.
-
----
-
-## ▶️ Running the Project
-
-### 1. Clone the repository
-
-```bash
-git clone <repository-url>
-
-cd task-manager
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-Update the environment variables according to your local setup.
-
-### 4. Start infrastructure
-
-```bash
-docker compose up -d
-```
-
-### 5. Start the application
+### Start the application
 
 ```bash
 npm run dev
 ```
 
-The API should then be available at:
+---
+
+## 🧪 Testing Strategy
+
+Clean Architecture makes the application easier to test because business logic is separated from infrastructure.
 
 ```text
-http://localhost:3000
+             Tests
+               │
+       ┌───────┴────────┐
+       ▼                ▼
+   Use Cases         Repositories
+       │                │
+       ▼                ▼
+    Mocks            Database
 ```
+
+Use cases can be tested independently by providing mock repository implementations.
 
 ---
 
-## 🧠 Engineering Concepts Demonstrated
+## 🧠 Architectural Principles
 
-This project was built to practice and demonstrate:
+This project focuses on applying:
 
 * Clean Architecture
 * SOLID principles
-* Dependency Inversion
+* Single Responsibility Principle
+* Dependency Inversion Principle
 * Repository Pattern
 * Use Case Pattern
-* REST API design
-* Event-driven architecture
-* Message brokers
-* Kafka consumer groups
-* Idempotent event processing
-* Retry strategies
-* Dead Letter Queues
-* Redis caching
-* Database transactions
-* PostgreSQL constraints
-* Distributed-system reliability
-* Docker
-* Centralized error handling
-* API validation
+* Dependency Injection
+* Separation of Concerns
+* Thin Controllers
+* Centralized Error Handling
+* Interface-based abstractions
 
 ---
 
@@ -550,35 +459,38 @@ This project was built to practice and demonstrate:
 
 Possible future improvements include:
 
-* WebSocket-based real-time task updates
-* Advanced task filtering and pagination
-* Full-text search
-* Redis distributed locks
-* Kafka partitioning strategy
-* Observability with OpenTelemetry
-* Prometheus metrics
-* Grafana dashboards
-* Structured logging
-* CI/CD pipeline
-* Kubernetes deployment
-* Horizontal scaling
-* Automated integration testing
-* Event replay mechanisms
+* Automated unit and integration tests
+* Pagination
+* Advanced task filtering
+* Task priorities
+* Task deadlines
+* Real-time notifications
+* WebSocket support
+* Role-based permissions
+* Audit logging
+* CI/CD
+* Monitoring and observability
+
+These features can be added without significantly changing the core architecture because the business logic is isolated from infrastructure concerns.
 
 ---
 
 ## 🎯 Project Goal
 
-The goal of this project is to build more than a simple CRUD Task Manager.
+The goal of this project is to demonstrate how to structure a real-world application using **Clean Architecture** rather than simply building a collection of CRUD endpoints.
 
-It is intended to demonstrate how a real-world backend can be structured to remain:
+The main architectural objective is:
 
-**Scalable → Maintainable → Reliable → Testable**
+```text
+Independent Business Logic
+          +
+Clear Separation of Concerns
+          +
+Dependency Inversion
+          +
+Maintainable Code
+          =
+Scalable Application Structure
+```
 
-while introducing distributed-system concepts such as asynchronous processing, idempotency, retries, and failure recovery.
-
----
-
-## 📝 License
-
-This project is for educational and portfolio purposes.
+The project prioritizes **architecture, maintainability, and separation of responsibilities** while implementing a practical Task Management system.
