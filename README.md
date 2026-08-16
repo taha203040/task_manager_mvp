@@ -33,37 +33,22 @@ The backend follows **Clean Architecture** principles.
 
 The main goal is to keep business logic independent from frameworks, databases, and external services.
 
-```text
-                 ┌─────────────────────┐
-                 │    Presentation     │
-                 │                     │
-                 │ Controllers / HTTP  │
-                 │ Routes / Middleware │
-                 └──────────┬──────────┘
-                            │
-                            ▼
-                 ┌─────────────────────┐
-                 │     Application     │
-                 │                     │
-                 │      Use Cases      │
-                 │        DTOs         │
-                 └──────────┬──────────┘
-                            │
-                            ▼
-                 ┌─────────────────────┐
-                 │       Domain        │
-                 │                     │
-                 │ Entities / Contracts│
-                 │   Business Rules    │
-                 └──────────┬──────────┘
-                            │
-                            ▼
-                 ┌─────────────────────┐
-                 │   Infrastructure    │
-                 │                     │
-                 │ PostgreSQL / Redis  │
-                 │ Repositories / ORM  │
-                 └─────────────────────┘
+```marmaid
+graph TB
+    PRES[Presentation Layer<br/>Controllers / HTTP Routes / Middleware]
+    APP[Application Layer<br/>Use Cases / DTOs]
+    DOMAIN[Domain Layer<br/>Entities / Contracts / Business Rules]
+    INFRA[Infrastructure Layer<br/>PostgreSQL / Redis / Repositories / ORM]
+    
+    PRES --> APP
+    APP --> DOMAIN
+    DOMAIN --> INFRA
+    
+    style PRES fill:#4A90D9,color:#fff,stroke:#2C3E50,stroke-width:2px
+    style APP fill:#2ECC71,color:#fff,stroke:#27AE60,stroke-width:2px
+    style DOMAIN fill:#F39C12,color:#fff,stroke:#D68910,stroke-width:2px
+    style INFRA fill:#E74C3C,color:#fff,stroke:#C0392B,stroke-width:2px
+
 ```
 
 ### Dependency Rule
