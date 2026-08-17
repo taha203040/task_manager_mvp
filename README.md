@@ -33,7 +33,7 @@ The backend follows **Clean Architecture** principles.
 
 The main goal is to keep business logic independent from frameworks, databases, and external services.
 
-```marmaid
+```mermaid
 graph TB
     PRES[Presentation Layer<br/>Controllers / HTTP Routes / Middleware]
     APP[Application Layer<br/>Use Cases / DTOs]
