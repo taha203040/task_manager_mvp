@@ -1,5 +1,9 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
+  // ts-node must load the ambient global declarations in src/types (*.d.ts) so req.user type-checks at runtime.
+  "ts-node": {
+    "files": true
+  },
   "compilerOptions": {
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

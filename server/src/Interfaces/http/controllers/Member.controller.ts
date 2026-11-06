@@ -1,100 +1,120 @@
+import { Request, Response } from "express";
 import { SqlMemberRepository } from "../../../Infrastructure/Repositories/Sql/Member";
+import { TeamRepoPostGress } from "../../../Infrastructure/Repositories/Sql/Team_SQl";
 import pool from "../../../Config/db";
 import * as members from "../../../Application/use-cases/Team-usecases/Member.usecase";
-// / Initialize repository and use cases
+import { sendError, sendUnauthorized } from "../middlewares/errorHandler";
 
+// Wiring: one member repository for every use case; team repository is needed to
+// resolve the ownership anchor (teams.created_by) for member management rules.
 export function Memebers(pool: any) {
     const repo = new SqlMemberRepository(pool)
+    const teamRepo = new TeamRepoPostGress(pool)
     return {
         create: new members.CreateTeamMemberUseCase(repo),
         getByTeamId: new members.GetTeamMembersByTeamIdUseCase(repo),
         getByUserId: new members.GetTeamMembersByUserIdUseCase(repo),
-        updateRole: new members.UpdateTeamMemberRoleUseCase(repo),
-        delete: new members.DeleteTeamMemberUseCase(repo),
+        updateRole: new members.UpdateTeamMemberRoleUseCase(repo, teamRepo),
+        delete: new members.DeleteTeamMemberUseCase(repo, teamRepo),
         checkMembership: new members.CheckTeamMembershipUseCase(repo),
-        searchUsers :new members.SearchUsersUsecase(repo)
+        searchUsers: new members.SearchUsersUsecase(repo)
     }
 }
-// Controller methods
+
 export class MemberController {
     private static useCases = Memebers(pool)
-    // Create a new team member
-    static async searchUsers(req: any, res: any): Promise<void> {
+
+    static async searchUsers(req: Request, res: Response): Promise<void> {
         try {
-            const { q: searchTerm } = req.query;
-            console.log(req.query)
-            console.log('cs', searchTerm)
-            const users = await MemberController.useCases.searchUsers.execute(searchTerm);
-            console.log('users',users)
-            res.status(200).json(users);
+            const users = await MemberController.useCases.searchUsers.execute(req.query?.q);
+            res.status(200).json({ users });
         } catch (error) {
-            console.log({err:error})
-            res.status(500).json({ error: error });
-        }
-    }
-    static async createTeamMember(teamId: string, userId: string, role: string): Promise<any> {
-        try {
-            const teamMember = await MemberController.useCases.create.execute(teamId, userId, role);
-            return { status: 201, data: teamMember };
-        } catch (err) {
-            return { status: 500, data: { error: err } };
+            sendError(res, error);
         }
     }
 
-    // Get team members by team ID
-    static async getTeamMembersByTeamId(req: any, res: any): Promise<void> {
+    /** Members of one team. Requires team membership; the creator is listed as owner. */
+    static async getTeamMembersByTeamId(req: Request, res: Response): Promise<void> {
         try {
+            const actorId = req.user?.user_id;
+            if (!actorId) {
+                return sendUnauthorized(res);
+            }
             const { teamId } = req.params;
-            const teamMembers = await MemberController.useCases.getByTeamId.execute(teamId);
+            const teamMembers = await MemberController.useCases.getByTeamId.execute(teamId as string, actorId);
             res.status(200).json(teamMembers);
         } catch (error) {
-            console.log(error)
-            res.status(500).json({ error: error });
+            sendError(res, error);
         }
     }
 
-    // Get team members by user ID
-    static async getTeamMembersByUserId(req: any, res: any): Promise<void> {
+    /** Own memberships only. */
+    static async getTeamMembersByUserId(req: Request, res: Response): Promise<void> {
         try {
+            const actorId = req.user?.user_id;
+            if (!actorId) {
+                return sendUnauthorized(res);
+            }
             const { userId } = req.params;
-            const teamMembers = await MemberController.useCases.getByUserId.execute(userId);
+            const teamMembers = await MemberController.useCases.getByUserId.execute(userId as string, actorId);
             res.status(200).json(teamMembers);
         } catch (error) {
-            res.status(500).json({ error: error });
+            sendError(res, error);
         }
     }
 
-    // Update team member role
-    static async updateTeamMemberRole(req: any, res: any): Promise<void> {
+    /** Owner/admin only; cannot change your own role, cannot escalate to owner as admin. */
+    static async updateTeamMemberRole(req: Request, res: Response): Promise<void> {
         try {
+            const actorId = req.user?.user_id;
+            if (!actorId) {
+                return sendUnauthorized(res);
+            }
             const { teamId, userId } = req.params;
-            const { role } = req.body;
-            const updatedTeamMember = await MemberController.useCases.updateRole.execute(teamId, userId, role);
-            res.status(200).json(updatedTeamMember);
+            const { role } = req.body ?? {};
+            await MemberController.useCases.updateRole.execute(
+                teamId as string,
+                userId as string,
+                role,
+                actorId,
+            );
+            res.status(200).json({ message: "Team member role updated successfully" });
         } catch (error) {
-            res.status(500).json({ error: error });
+            sendError(res, error);
         }
     }
 
-    // Delete team member
-    static async deleteTeamMember(req: any, res: any): Promise<void> {
+    /** Owner/admin removing someone else, or a member leaving the team. */
+    static async deleteTeamMember(req: Request, res: Response): Promise<void> {
         try {
+            const actorId = req.user?.user_id;
+            if (!actorId) {
+                return sendUnauthorized(res);
+            }
             const { teamId, userId } = req.params;
-            await MemberController.useCases.delete.execute(teamId, userId);
+            await MemberController.useCases.delete.execute(teamId as string, userId as string, actorId);
             res.status(204).send();
         } catch (error) {
-            res.status(500).json({ error: error });
+            sendError(res, error);
         }
     }
 
-    // Check team membership
-    static async checkTeamMembership(req: any, res: any): Promise<void> {
+    /** Self-check, or a member of the same team. */
+    static async checkTeamMembership(req: Request, res: Response): Promise<void> {
         try {
+            const actorId = req.user?.user_id;
+            if (!actorId) {
+                return sendUnauthorized(res);
+            }
             const { teamId, userId } = req.params;
-            const isMember = await MemberController.useCases.checkMembership.execute(teamId, userId);
+            const isMember = await MemberController.useCases.checkMembership.execute(
+                teamId as string,
+                userId as string,
+                actorId,
+            );
             res.status(200).json({ isMember });
         } catch (error) {
-            res.status(500).json({ error: error });
+            sendError(res, error);
         }
     }
 }

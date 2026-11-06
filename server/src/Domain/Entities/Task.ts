@@ -10,6 +10,8 @@ export class Task {
         public readonly id?: string,
         public readonly created_at: Date = new Date(),
         public updated_at: Date = new Date(),
+        public assignee_id: string | null = null,
+        public labels: string[] = [],
     ) { }
 }
 

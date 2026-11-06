@@ -3,75 +3,70 @@ import { Team } from "../../../Domain/Entities/Team";
 import { GetTeamById, GetTeamsByUser, UpdateTeam, DeleteTeam, CreateTeam, GetInvitesByUserIdUseCase } from "../../../Application/use-cases/Team-usecases/Team.usecase";
 import pool from "../../../Config/db";
 import { TeamRepoPostGress } from "../../../Infrastructure/Repositories/Sql/Team_SQl";
+import { sendError, sendUnauthorized } from "../middlewares/errorHandler";
 
 const teamRepo = new TeamRepoPostGress(pool);
 export class TeamController {
+    /** The creator is always the authenticated user; a client-supplied created_by is ignored. */
     static async createTeam(req: Request, res: Response) {
         try {
-            const { name, description } = req.body;
-            //@ts-ignore
-            const user_id = req.user?.user_id
-            console.log(user_id)
-            console.log(name, description)
-            if (!name || !user_id) {
-                return res.status(400).json({ error: "Name and userId are required" });
+            const userId = req.user?.user_id;
+            if (!userId) {
+                return sendUnauthorized(res);
             }
+
+            const { name, description } = req.body ?? {};
             const team: Team = new Team(
-                name,
-                user_id,
-                description || null,
+                typeof name === "string" ? name : "",
+                userId,
+                description === undefined || description === null || description === "" ? null : String(description),
             );
+
             const teamUseCase = new CreateTeam(teamRepo);
-            await teamUseCase.execute(team);
-            res.status(201).json({ message: "Team created successfully" });
+            const created = await teamUseCase.execute(team);
+            res.status(201).json({ message: "Team created successfully", team: created });
         } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: "Server error1" });
+            sendError(res, err);
         }
     }
+
+    /** Teams created by the caller plus teams the caller belongs to. Never includes members. */
     static async getTeamsByUser(req: Request, res: Response) {
         try {
-            // @ts-ignore
-            const userId = req.user?.user_id || 'undifind'
+            const userId = req.user?.user_id;
             if (!userId) {
-                return res.status(400).json({ error: "UserId is required" });
+                return sendUnauthorized(res);
             }
             const teamUseCase = new GetTeamsByUser(teamRepo);
             const teams = await teamUseCase.execute(userId);
             res.status(200).json(teams);
         } catch (err) {
-            console.error('error', err);
-            res.status(500).json({ error: "Server error" });
+            sendError(res, err);
         }
     }
 
     static async getTeamById(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            // @ts-ignore
-            const { user_id } = req.user
-            console.log(user_id)
-            console.log('the user', user_id, 'the id', id)
-            if (!id || !user_id) {
-                return res.status(400).json({ error: "Team id and userId are required1" });
+            const userId = req.user?.user_id;
+            if (!id || !userId) {
+                return sendUnauthorized(res);
             }
             const teamUseCase = new GetTeamById(teamRepo);
-            const team = await teamUseCase.execute(id, user_id);
+            const team = await teamUseCase.execute(id, userId);
             if (!team) {
                 return res.status(404).json({ error: "Team not found" });
             }
             res.status(200).json(team);
         } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: "Server error" });
+            sendError(res, err);
         }
     }
 
     static async deleteTeam(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            //@ts-ignore
-            const user_id = req.user?.user_id
+            const user_id = req.user?.user_id;
             if (!id || !user_id) {
                 return res.status(400).json({ error: "Team id and userId are required2" });
             }
@@ -79,8 +74,7 @@ export class TeamController {
             await teamUseCase.execute(id, user_id);
             res.status(200).json({ message: "Team deleted successfully" });
         } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: "Server error" });
+            sendError(res, err);
         }
     }
 
@@ -102,9 +96,7 @@ export class TeamController {
             await teamUseCase.execute(updatedTeam, userId);
             res.status(200).json({ message: "Team updated successfully" });
         } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: "Server error" });
+            sendError(res, err);
         }
     }
 }
-

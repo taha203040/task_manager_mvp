@@ -9,12 +9,10 @@ userRouter.post("/register", UserController.register);
 
 userRouter.post("/signin", UserController.login);
 
-userRouter.get('/info', authenticate, (req, res) => {
-        //@ts-ignore
-    // console.log(req.user?.user_id)
-    //@ts-ignore
-    res.status(200).send({ email: req.user?.email, username: req.user.username, user_id: req.user?.user_id })
-}
-)
+// Current user's public profile
+userRouter.get('/info', authenticate, UserController.getProfile);
+
+// Update only the authenticated user's own profile
+userRouter.put('/profile', authenticate, UserController.updateProfile);
 
 export default userRouter;

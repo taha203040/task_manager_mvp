@@ -8,6 +8,8 @@ import rateLimit from 'express-rate-limit';
 import taskrouter from './Interfaces/http/Routes/task.routes';
 import teamrouter from './Interfaces/http/Routes/Team.routes';
 import memberRouter from './Interfaces/http/Routes/memebers.routes';
+import projectRouter from './Interfaces/http/Routes/project.routes';
+import activityRouter from './Interfaces/http/Routes/activity.routes';
 import cors from "cors";
 import config from './Config/envs';
 import cookieParser from 'cookie-parser'
@@ -21,13 +23,19 @@ const limmiter = rateLimit({
 })
 app.use(express.json());
 app.use(cookieParser())
-app.use(cors());
+app.use(cors({
+     origin: "http://localhost:8080",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true
+}));
 app.use('/api/v1/members/', memberRouter)
 app.use('/api/v1/auth/', authrouter)
 app.use('/api/v1/tasks/', taskrouter);
 app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)
+app.use('/api/v1/projects/', projectRouter)
+app.use('/api/v1/activity', activityRouter)
 const PORT = config.app.port
 
 console.log('serer running')

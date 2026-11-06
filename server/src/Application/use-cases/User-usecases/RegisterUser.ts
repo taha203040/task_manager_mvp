@@ -11,13 +11,7 @@ export class RegistserUser {
             throw new Error('User already Exists')
         }
         const hashed = await bcrypt.hash(password, 10)
-        const user: User = {
-
-            password: hashed,
-            email: email,
-            username: username,
-            role: Role
-        }
+        const user: User = new User(email, hashed, username, Role)
         await this.userrepo.create(user)
     }
 }
