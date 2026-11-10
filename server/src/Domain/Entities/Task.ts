@@ -12,7 +12,18 @@ export class Task {
         public updated_at: Date = new Date(),
         public assignee_id: string | null = null,
         public labels: string[] = [],
+        public assignee: TaskAssignee | null = null,
     ) { }
+}
+
+/**
+ * Resolved assignee projection attached to task reads so a client can render
+ * "Assigned to <name>" without a second lookup (there is no GET /users/:id).
+ */
+export interface TaskAssignee {
+    user_id: string;
+    username: string | null;
+    avatar: string | null;
 }
 
 export enum TaskStatus {

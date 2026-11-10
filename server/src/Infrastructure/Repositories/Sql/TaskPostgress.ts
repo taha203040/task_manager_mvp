@@ -1,5 +1,5 @@
 import { TaskRepo } from "../../../Application/Repositories/Task_Repo";
-import { Task } from "../../../Domain/Entities/Task";
+import { Task, TaskAssignee } from "../../../Domain/Entities/Task";
 import { Pool } from "pg";
 
 /**
@@ -22,6 +22,20 @@ const ACCESS_PREDICATE = `(
     )
 )`;
 
+/** Task projection with the assignee resolved (no GET /users/:id exists on the API). */
+const TASK_SELECT = `SELECT t.*, u.username AS assignee_username, u.avatar AS assignee_avatar
+    FROM tasks AS t
+    LEFT JOIN users u ON u.id = t.assignee_id`;
+
+function mapAssignee(row: any): TaskAssignee | null {
+    if (!row.assignee_id) return null;
+    return {
+        user_id: row.assignee_id,
+        username: row.assignee_username ?? null,
+        avatar: row.assignee_avatar ?? null,
+    };
+}
+
 function mapRow(row: any): Task {
     const labels: string[] = Array.isArray(row.labels)
         ? row.labels.map((label: unknown) => String(label))
@@ -39,6 +53,7 @@ function mapRow(row: any): Task {
         row.updated_at,
         row.assignee_id ?? null,
         labels,
+        mapAssignee(row),
     );
 }
 
@@ -48,7 +63,14 @@ export class TaskRepoPostGress implements TaskRepo {
 
     async create(task: Task): Promise<Task> {
         const inserted = await this.pool.query(
-            "INSERT INTO tasks ( title, description, priority, due_date, status, project_id,updated_at , created_at , user_id, assignee_id, labels) VALUES ($1, $2, $3, $4, $5, $6, $7, $8 , $9 , $10 , $11::jsonb ) RETURNING *",
+            `WITH inserted AS (
+                 INSERT INTO tasks ( title, description, priority, due_date, status, project_id,updated_at , created_at , user_id, assignee_id, labels)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8 , $9 , $10 , $11::jsonb )
+                 RETURNING *
+             )
+             SELECT inserted.*, u.username AS assignee_username, u.avatar AS assignee_avatar
+             FROM inserted
+             LEFT JOIN users u ON u.id = inserted.assignee_id`,
             [
                 task.title,
                 task.description,
@@ -68,7 +90,7 @@ export class TaskRepoPostGress implements TaskRepo {
 
     async getById(id: string, userId: string): Promise<Task | null> {
         const result = await this.pool.query(
-            `SELECT t.* FROM tasks AS t WHERE t.id = $2 AND ${ACCESS_PREDICATE}`,
+            `${TASK_SELECT} WHERE t.id = $2 AND ${ACCESS_PREDICATE}`,
             [userId, id]
         );
         if (result.rows.length === 0) return null;
@@ -114,7 +136,7 @@ export class TaskRepoPostGress implements TaskRepo {
 
     async getTasksByUser(userId: string): Promise<Task[]> {
         const result = await this.pool.query(
-            `SELECT t.* FROM tasks AS t WHERE ${ACCESS_PREDICATE} ORDER BY t.created_at DESC`,
+            `${TASK_SELECT} WHERE ${ACCESS_PREDICATE} ORDER BY t.created_at DESC`,
             [userId]
         );
         return result.rows.map(mapRow);

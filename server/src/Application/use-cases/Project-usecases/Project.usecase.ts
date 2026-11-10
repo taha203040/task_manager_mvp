@@ -83,6 +83,22 @@ export class GetProjectById {
     }
 }
 
+export class GetProjectMembers {
+    constructor(private readonly projectRepo: ProjectRepo) { }
+
+    /** Project members are the default assignment candidates; 404 when the project is not visible. */
+    async execute(projectId: string, userId: string): Promise<ProjectMemberDTO[]> {
+        const project = await this.projectRepo.getById(projectId);
+        if (!project) {
+            throw new NotFoundError("Project not found");
+        }
+        if (!await this.projectRepo.canAccess(projectId, userId)) {
+            throw new NotFoundError("Project not found");
+        }
+        return this.projectRepo.listMembers(projectId);
+    }
+}
+
 export class CreateProject {
     constructor(
         private readonly projectRepo: ProjectRepo,

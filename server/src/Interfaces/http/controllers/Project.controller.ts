@@ -6,6 +6,7 @@ import {
     CreateProject,
     DeleteProject,
     GetProjectById,
+    GetProjectMembers,
     ListProjects,
     UpdateProject,
 } from "../../../Application/use-cases/Project-usecases/Project.usecase";
@@ -53,6 +54,24 @@ export class ProjectController {
             const project = await getProject.execute(id as string, userId);
 
             res.status(200).json({ project });
+        } catch (error) {
+            sendError(res, error);
+        }
+    }
+
+    /** Assignment candidates for a project (same rows as project.members on GET /projects/:id). */
+    static async getMembers(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const userId = req.user?.user_id;
+            if (!userId) {
+                return sendUnauthorized(res);
+            }
+
+            const getMembers = new GetProjectMembers(projectRepo);
+            const members = await getMembers.execute(id as string, userId);
+
+            res.status(200).json({ members });
         } catch (error) {
             sendError(res, error);
         }
