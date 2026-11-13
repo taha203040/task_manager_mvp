@@ -9,7 +9,10 @@
     "allowSyntheticDefaultImports": true,
     // File Layout
     "rootDir": "./src",
-    "typeRoots": ["./node_modules/@types", "./src/types"], // "outDir": "./dist",
+    // Emit next to nothing: without outDir, tsc wrote .js/.d.ts/.map beside every source
+    // file inside src/, which shadows the real .ts at require() time (TM-20).
+    "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",

@@ -1,3 +1,14 @@
 .env
 .env.*
 /node_modules/
+
+# Build output (tsconfig outDir). Compiled artifacts must never land in src/ again (TM-20).
+/dist/
+
+# Defensive: ignore stray tsc output if someone builds without outDir.
+# The hand-written ambient declarations in src/types stay tracked.
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
+!src/types/**
