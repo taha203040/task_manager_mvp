@@ -7,6 +7,9 @@ export class User {
     public readonly id?: string,
     public bio: string | null = null,
     public avatar: string | null = null,
+    /** Consecutive failed logins, used for progressive throttling (TM-02). */
+    public readonly failedLoginCount: number = 0,
+    public readonly lastFailedLoginAt: Date | null = null,
   ) { }
 }
 

@@ -1,28 +1,20 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { verifyAccessToken } from "../../../Config/jwt";
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-    try {
-        // const token = req.cookies.token; // get token from cookie 
-        const token = req.cookies.token // get token from cookie or authorization header
+    const token: unknown = req.cookies?.token;
 
-        if (!token) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
-        const decoded = jwt.verify(token, 'hellofromahemd') as JwtPayload
-        // Verify the token
-        if (typeof decoded !== 'object' || !decoded) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
-        // @ts-ignore
-        req.user = decoded as any
-        
-        //@ts-ignore
-        // console.log(req.user)
-        // console.log('auth done')
-        next(); // Proceed to the next middleware or route handler
-    } catch (err) {
-        console.error(err);
-        return res.status(403).json({ error: "Forbidden" });
+    if (typeof token !== "string" || token.length === 0) {
+        return res.status(401).json({ error: "Unauthorized" });
     }
-}
+
+    try {
+        req.user = verifyAccessToken(token);
+    } catch {
+        // Never echo or log the underlying jwt error: "expired" vs "bad signature"
+        // is a useful oracle, and either message can carry token material.
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    return next();
+};

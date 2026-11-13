@@ -4,9 +4,9 @@ import { RegistserUser } from "../../../Application/use-cases/User-usecases/Regi
 import { UpdateUserProfile } from "../../../Application/use-cases/User-usecases/UpdateProfile";
 import { UserRepoPostgress } from "../../../Infrastructure/Repositories/Sql/PostgresLogicUser";
 import pool from "../../../Config/db";
-import jwt from "jsonwebtoken";
+import { signAccessToken } from "../../../Config/jwt";
 import { sendError, sendUnauthorized } from "../middlewares/errorHandler";
-import { NotFoundError } from "../../../Domain/Errors/AppError";
+import { AppError, NotFoundError } from "../../../Domain/Errors/AppError";
 const userrepo = new UserRepoPostgress(pool);
 
 export class UserController {
@@ -28,7 +28,7 @@ export class UserController {
     static async login(req: Request, res: Response) {
         try {
             const { password, email } = req.body;
-            if (!password || !email) {
+            if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
                 return res.status(400).json({ error: "All fields are required" });
             }
 
@@ -38,7 +38,7 @@ export class UserController {
             if (!user) {
                 return res.status(401).json({ error: "Invalid credentials" });
             }
-            const token = jwt.sign({ email: email, username: user.username, user_id: user.id }, 'hellofromahemd', { expiresIn: '1h' });
+            const token = signAccessToken({ email, username: user.username, user_id: user.id });
             res.cookie("token", token, {
                 httpOnly: true, // ❌ لا يمكن الوصول إليها من JavaScript
                 secure: false,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
@@ -52,6 +52,12 @@ export class UserController {
                 , token
             });
         } catch (error) {
+            // Domain errors (bad credentials, throttled account) carry their own status,
+            // so a failed login answers 401 instead of a misleading 500 (TM-19, partial).
+            if (error instanceof AppError) {
+                sendError(res, error);
+                return;
+            }
             console.error(error);
             res.status(500).json({ success: false, message: "Server error" });
         }

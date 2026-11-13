@@ -41,6 +41,22 @@ export class UserRepoMongo implements UserRep {
             { returnDocument: "after" },
         )
     }
+    async recordFailedLogin(userId: string): Promise<void> {
+        const objectId = UserRepoMongo.toObjectId(userId)
+        if (!objectId) return
+        await this.collection.updateOne(
+            { _id: objectId } as any,
+            { $inc: { failedLoginCount: 1 }, $set: { lastFailedLoginAt: new Date() } } as any,
+        )
+    }
+    async resetFailedLogins(userId: string): Promise<void> {
+        const objectId = UserRepoMongo.toObjectId(userId)
+        if (!objectId) return
+        await this.collection.updateOne(
+            { _id: objectId } as any,
+            { $set: { failedLoginCount: 0, lastFailedLoginAt: null } } as any,
+        )
+    }
     private static toObjectId(id: string): ObjectId | null {
         try {
             return new ObjectId(id)

@@ -1,10 +1,7 @@
 import express, { type Request, type Response } from 'express';
-// import { connectMongodb, getDb } from './Infrastructure/Repositories/mongoDb/mongoClient';
 import userRouter from './Interfaces/http/Routes/user.routes';
 import authrouter from './Interfaces/http/Routes/auth.routes';
-// import filerouter from './Interfaces/http/Routes/file.routes';
 import inviteRouter from './Interfaces/http/Routes/Invites.routes';
-import rateLimit from 'express-rate-limit';
 import taskrouter from './Interfaces/http/Routes/task.routes';
 import teamrouter from './Interfaces/http/Routes/Team.routes';
 import memberRouter from './Interfaces/http/Routes/memebers.routes';
@@ -12,22 +9,32 @@ import projectRouter from './Interfaces/http/Routes/project.routes';
 import activityRouter from './Interfaces/http/Routes/activity.routes';
 import cors from "cors";
 import config from './Config/envs';
-import cookieParser from 'cookie-parser'
+import cookieParser from 'cookie-parser';
+import { createAuthLimiter, createGlobalLimiter } from './Interfaces/http/middlewares/rateLimiters';
+
 const app = express();
-const limmiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: "Too many requests from this IP, please try again later.",
-    standardHeaders: true,
-    legacyHeaders: false
-})
-app.use(express.json());
-app.use(cookieParser())
+
+// The deployment has exactly one trusted reverse-proxy hop. Getting this wrong lets a
+// client forge X-Forwarded-For and rotate rate-limit buckets (TM-02, TM-14).
+app.set('trust proxy', config.app.trustProxyHops);
+app.disable('x-powered-by');
+
+// Broad per-IP ceiling first, so even unauthenticated floods are bounded.
+app.use(createGlobalLimiter());
+app.use(express.json({ limit: '128kb' }));
+app.use(cookieParser());
 app.use(cors({
-     origin: "http://localhost:8080",
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  credentials: true
+    origin: config.app.corsOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
 }));
+
+// Strict ceiling on the credential endpoints. Mounted before the routers that own
+// these paths; skipSuccessfulRequests keeps normal logins from consuming the budget.
+const authLimiter = createAuthLimiter();
+app.use('/api/v1/users/signin', authLimiter);
+app.use('/api/v1/users/register', authLimiter);
+
 app.use('/api/v1/members/', memberRouter)
 app.use('/api/v1/auth/', authrouter)
 app.use('/api/v1/tasks/', taskrouter);
@@ -36,13 +43,16 @@ app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)
 app.use('/api/v1/projects/', projectRouter)
 app.use('/api/v1/activity', activityRouter)
-const PORT = config.app.port
 
-console.log('serer running')
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World');
-    console.log('serer running')
 });
 
+// Only bind a port when run directly. Importing the app (tests, tooling) must not
+// start a listener, which would make the module impossible to exercise in-process.
+if (require.main === module) {
+    const PORT = config.app.port;
+    app.listen(PORT, () => console.log('Server running', PORT));
+}
 
-app.listen(PORT, () => console.log('Server running',PORT));
+export default app;

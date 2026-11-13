@@ -12,6 +12,9 @@ function mapRow(row: any): User {
         row.id,
         row.bio ?? null,
         row.avatar ?? null,
+        // Tolerates a database that has not run migration 008 yet.
+        row.failed_login_count ?? 0,
+        row.last_failed_login_at ? new Date(row.last_failed_login_at) : null,
     );
 }
 
@@ -33,8 +36,7 @@ export class UserRepoPostgress implements UserRep {
         return result.rows[0] ? mapRow(result.rows[0]) : null
     }
 
-    async existsByUsername(username: string, excludeUserId?: string): Promise<boolean> {
-        const result = await this.pool.query(
+    async existsByUsername(username: string, excludeUserId?: string): Promise<boolean> {        const result = await this.pool.query(
             `SELECT 1 FROM users
              WHERE username = $1
                AND ($2::uuid IS NULL OR id <> $2::uuid)`,
@@ -77,5 +79,25 @@ export class UserRepoPostgress implements UserRep {
             }
             throw error;
         }
+    }
+
+    async recordFailedLogin(userId: string): Promise<void> {
+        await this.pool.query(
+            `UPDATE users
+             SET failed_login_count = failed_login_count + 1,
+                 last_failed_login_at = NOW()
+             WHERE id = $1`,
+            [userId],
+        );
+    }
+
+    async resetFailedLogins(userId: string): Promise<void> {
+        await this.pool.query(
+            `UPDATE users
+             SET failed_login_count = 0, last_failed_login_at = NULL
+             WHERE id = $1
+               AND (failed_login_count <> 0 OR last_failed_login_at IS NOT NULL)`,
+            [userId],
+        );
     }
 }
