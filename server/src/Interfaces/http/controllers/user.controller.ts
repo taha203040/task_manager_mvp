@@ -5,6 +5,7 @@ import { UpdateUserProfile } from "../../../Application/use-cases/User-usecases/
 import { UserRepoPostgress } from "../../../Infrastructure/Repositories/Sql/PostgresLogicUser";
 import pool from "../../../Config/db";
 import { signAccessToken } from "../../../Config/jwt";
+import config from "../../../Config/envs";
 import { sendError, sendUnauthorized } from "../middlewares/errorHandler";
 import { AppError, NotFoundError } from "../../../Domain/Errors/AppError";
 const userrepo = new UserRepoPostgress(pool);
@@ -40,8 +41,10 @@ export class UserController {
             }
             const token = signAccessToken({ email, username: user.username, user_id: user.id });
             res.cookie("token", token, {
-                httpOnly: true, // ❌ لا يمكن الوصول إليها من JavaScript
-                secure: false,   // ✅ تُرسل فقط عبر HTTPS (فعّلها في الإنتاج)
+                httpOnly: true, // not reachable from JavaScript
+                // Behind the single TLS-terminating proxy the browser only ever
+                // speaks HTTPS, so mark the session cookie Secure outside dev.
+                secure: config.app.env === "production",
                 sameSite: "lax",
                 path: "/",
                 maxAge: 60 * 60 * 1000, // ساعة واحدة 

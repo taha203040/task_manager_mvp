@@ -1,6 +1,7 @@
 import Router from 'express'
 import { authenticate } from '../middlewares/authMiddleware'
 import { cookie } from 'express-validator'
+import config from '../../../Config/envs'
 const authrouter = Router()
 
 
@@ -14,7 +15,9 @@ authrouter.get('/logout', (req, res) => {
     try {
         res.clearCookie("token", {
             httpOnly: true,
-            secure: false,
+            // Must match the attributes the cookie was set with, otherwise the
+            // browser keeps the stale session cookie after logout.
+            secure: config.app.env === "production",
             sameSite: "lax",
             path: "/",
         });
