@@ -1,4 +1,7 @@
-import { fromNodeHandler } from "h3";
+// Imported through `nitro/h3`, not `h3`: nitro is a declared dependency of this
+// package, while h3 is only a transitive one, so this specifier is guaranteed to
+// resolve in a clean CI install no matter how npm lays out the tree.
+import { fromNodeHandler } from "nitro/h3";
 import app from "../../../../../server/src/app";
 
 /**
