@@ -1,3 +1,4 @@
+import { routeParam } from "../utils/params";
 import pool from "../../../Config/db";
 import * as invite from '../../../Application/use-cases/Team-usecases/Invite.usecase'
 import { SqlTeamInviteRepository } from "../../../Infrastructure/Repositories/Sql/Invitation";
@@ -56,7 +57,7 @@ export class InvitationController {
     // Get invitation by ID
     static async getInviteById(req: Request, res: Response): Promise<void> {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const actorId = req.user?.user_id;
             if (!actorId) {
                 return sendUnauthorized(res);
@@ -81,7 +82,7 @@ export class InvitationController {
     // Get invitations by team ID (team members only)
     static async getInvitesByTeamId(req: Request, res: Response): Promise<void> {
         try {
-            const { teamId } = req.params;
+            const teamId = routeParam(req.params.teamId);
             const actorId = req.user?.user_id;
             if (!actorId) {
                 return sendUnauthorized(res);
@@ -119,7 +120,7 @@ export class InvitationController {
     // Update invitation status (accept / decline)
     static async handleInviteResponse(req: Request, res: Response): Promise<void> {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const actorId = req.user?.user_id;
             if (!actorId) {
                 return sendUnauthorized(res);
@@ -153,7 +154,7 @@ export class InvitationController {
     // Delete an invitation
     static async deleteInvite(req: Request, res: Response): Promise<void> {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const actorId = req.user?.user_id;
             if (!actorId) {
                 return sendUnauthorized(res);
@@ -178,7 +179,8 @@ export class InvitationController {
     // Get pending invitation for a user and team
     static async getPendingInvite(req: Request, res: Response): Promise<void> {
         try {
-            const { teamId, userId } = req.params;
+            const teamId = routeParam(req.params.teamId);
+const userId = routeParam(req.params.userId);
             const actorId = req.user?.user_id;
             if (!actorId) {
                 return sendUnauthorized(res);

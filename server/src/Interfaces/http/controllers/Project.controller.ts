@@ -1,3 +1,4 @@
+import { routeParam } from "../utils/params";
 import { Request, Response } from "express";
 import pool from "../../../Config/db";
 import { ProjectRepoPostgress } from "../../../Infrastructure/Repositories/Sql/ProjectPostgress";
@@ -44,7 +45,7 @@ export class ProjectController {
 
     static async getById(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!userId) {
                 return sendUnauthorized(res);
@@ -62,7 +63,7 @@ export class ProjectController {
     /** Assignment candidates for a project (same rows as project.members on GET /projects/:id). */
     static async getMembers(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!userId) {
                 return sendUnauthorized(res);
@@ -107,7 +108,7 @@ export class ProjectController {
 
     static async update(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!userId) {
                 return sendUnauthorized(res);
@@ -137,7 +138,7 @@ export class ProjectController {
 
     static async delete(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!userId) {
                 return sendUnauthorized(res);

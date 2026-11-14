@@ -208,13 +208,13 @@ chained value (`203.0.113.10, 6.6.6.6`) resolved to the rightmost entry.
 6. **`loadConfig()` runs at import.** A missing `JWT_SECRET` or `DATABASE_URL`
    throws while the function module loads, which takes down **SSR too**, not just
    the API. Set the environment variables before the first deploy.
-7. **`npm run build` (tsc) in `server/` currently reports 10 pre-existing type
-   errors** in `invitation.controller.ts` and `Task.controller.ts`
-   (`string | string[]` not assignable to `string`), introduced by the
-   `@types/express` 5.3.x bump during the workspace install. The Vercel build does
-   not typecheck (Nitro/Vite transform only) and is unaffected, but CI running
-   `tsc` will fail until those call sites are narrowed or `express`/`@types/express`
-   are pinned back to 5.1.0 / 5.0.3.
+7. **`tsc` must keep passing.** The workspace install resolves
+   `@types/express` 5.3.x, which types a route parameter as `string | string[]`.
+   Every controller therefore normalizes params through
+   `server/src/Interfaces/http/utils/params.ts` (`routeParam`) instead of
+   destructuring `req.params` straight into `string` arguments. A new handler that
+   destructures `req.params` directly will fail `npm run build` in `server/` — and
+   because Vercel builds the workspace, that fails the deploy.
 
 ---
 

@@ -1,3 +1,4 @@
+import { routeParam } from "../utils/params";
 import { Request, Response } from "express";
 import { Team } from "../../../Domain/Entities/Team";
 import { GetTeamById, GetTeamsByUser, UpdateTeam, DeleteTeam, CreateTeam, GetInvitesByUserIdUseCase } from "../../../Application/use-cases/Team-usecases/Team.usecase";
@@ -47,7 +48,7 @@ export class TeamController {
 
     static async getTeamById(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -65,7 +66,7 @@ export class TeamController {
 
     static async deleteTeam(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const user_id = req.user?.user_id;
             if (!id || !user_id) {
                 return res.status(400).json({ error: "Team id and userId are required2" });
@@ -80,7 +81,8 @@ export class TeamController {
 
     static async updateTeam(req: Request, res: Response) {
         try {
-            const { id, userId } = req.params;
+            const id = routeParam(req.params.id);
+const userId = routeParam(req.params.userId);
             const { name, description } = req.body;
             if (!id || !userId) {
                 return res.status(400).json({ error: "Team id and userId are required3" });

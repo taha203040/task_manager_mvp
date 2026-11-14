@@ -1,3 +1,4 @@
+import { routeParam } from "../utils/params";
 import { Request, Response } from "express";
 import { SqlMemberRepository } from "../../../Infrastructure/Repositories/Sql/Member";
 import { TeamRepoPostGress } from "../../../Infrastructure/Repositories/Sql/Team_SQl";
@@ -40,7 +41,7 @@ export class MemberController {
             if (!actorId) {
                 return sendUnauthorized(res);
             }
-            const { teamId } = req.params;
+            const teamId = routeParam(req.params.teamId);
             const teamMembers = await MemberController.useCases.getByTeamId.execute(teamId as string, actorId);
             res.status(200).json(teamMembers);
         } catch (error) {
@@ -55,7 +56,7 @@ export class MemberController {
             if (!actorId) {
                 return sendUnauthorized(res);
             }
-            const { userId } = req.params;
+            const userId = routeParam(req.params.userId);
             const teamMembers = await MemberController.useCases.getByUserId.execute(userId as string, actorId);
             res.status(200).json(teamMembers);
         } catch (error) {
@@ -70,7 +71,8 @@ export class MemberController {
             if (!actorId) {
                 return sendUnauthorized(res);
             }
-            const { teamId, userId } = req.params;
+            const teamId = routeParam(req.params.teamId);
+const userId = routeParam(req.params.userId);
             const { role } = req.body ?? {};
             await MemberController.useCases.updateRole.execute(
                 teamId as string,
@@ -91,7 +93,8 @@ export class MemberController {
             if (!actorId) {
                 return sendUnauthorized(res);
             }
-            const { teamId, userId } = req.params;
+            const teamId = routeParam(req.params.teamId);
+const userId = routeParam(req.params.userId);
             await MemberController.useCases.delete.execute(teamId as string, userId as string, actorId);
             res.status(204).send();
         } catch (error) {
@@ -106,7 +109,8 @@ export class MemberController {
             if (!actorId) {
                 return sendUnauthorized(res);
             }
-            const { teamId, userId } = req.params;
+            const teamId = routeParam(req.params.teamId);
+const userId = routeParam(req.params.userId);
             const isMember = await MemberController.useCases.checkMembership.execute(
                 teamId as string,
                 userId as string,

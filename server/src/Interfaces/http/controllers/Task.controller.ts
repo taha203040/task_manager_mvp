@@ -1,3 +1,4 @@
+import { routeParam } from "../utils/params";
 import { Request, Response } from "express";
 import {
     CreateTask,
@@ -175,7 +176,7 @@ export class TaskController {
 
     static async getTaskById(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -196,7 +197,7 @@ export class TaskController {
 
     static async updateTask(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -240,7 +241,7 @@ export class TaskController {
 
     static async deleteTask(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -257,7 +258,7 @@ export class TaskController {
 
     static async getComments(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -273,7 +274,7 @@ export class TaskController {
 
     static async addComment(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -289,7 +290,7 @@ export class TaskController {
 
     static async getAttachments(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -305,7 +306,7 @@ export class TaskController {
 
     static async addAttachment(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const id = routeParam(req.params.id);
             const userId = req.user?.user_id;
             if (!id || !userId) {
                 return sendUnauthorized(res);
@@ -324,7 +325,8 @@ export class TaskController {
 
     static async deleteAttachment(req: Request, res: Response) {
         try {
-            const { id, attachmentId } = req.params;
+            const id = routeParam(req.params.id);
+const attachmentId = routeParam(req.params.attachmentId);
             const userId = req.user?.user_id;
             if (!id || !attachmentId || !userId) {
                 return sendUnauthorized(res);
