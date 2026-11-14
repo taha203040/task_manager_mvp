@@ -12,7 +12,10 @@
     // Emit next to nothing: without outDir, tsc wrote .js/.d.ts/.map beside every source
     // file inside src/, which shadows the real .ts at require() time (TM-20).
     "outDir": "./dist",
-    "typeRoots": ["./node_modules/@types", "./src/types"],
+    // npm workspaces hoist @types/* to the repo-root node_modules, so the local
+    // ./node_modules/@types no longer exists. Keep it first for a standalone
+    // install, then fall back to the hoisted copy.
+    "typeRoots": ["./node_modules/@types", "../node_modules/@types", "./src/types"],
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",
