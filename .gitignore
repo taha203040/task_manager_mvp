@@ -1,3 +1,23 @@
+# Secrets — never commit
 .env
 .env.*
+
+# A SINGLE lockfile lives at the repo root (npm workspaces). Per-package
+# lockfiles are deleted; re-running `npm install` inside client/ or server/
+# would recreate them and split the dependency graph again.
+client/package-lock.json
+server/package-lock.json
+
+# Dependencies (hoisted to the root workspace)
 /node_modules/
+client/node_modules/
+server/node_modules/
+
+# Local npm cache (the sandbox cannot write to the user-level cache)
+/.npm-cache/
+
+# Scratch space used while wiring the deployment
+/.tmp-inspect/
+
+# Local verification logs
+*.log

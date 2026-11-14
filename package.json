@@ -1,0 +1,5 @@
+{
+  "name": "tasky",
+  "private": true,
+  "workspaces": ["client", "server"]
+}
