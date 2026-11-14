@@ -1,9 +1,15 @@
 // server/src/Config/envs.ts (top of file, replace the two dotenv lines)
 import dotenv from "dotenv";
 import path from "path";
+import { getServerRoot } from "../Shared/utils/module-paths";
 
 const envFile = process.env.NODE_ENV === "production" ? ".env.production" : ".env";
-dotenv.config({ path: path.resolve(__dirname, "../../", envFile), quiet: true });
+// .env / .env.production sit at the server package root, which is what dotenv
+// used to reach with `path.resolve(__dirname, "../../", envFile)`. getServerRoot()
+// returns the same directory under CommonJS (ts-node from src/, node from dist/)
+// and falls back to the working directory inside the bundled ESM function, where
+// no env files exist and the platform environment variables are authoritative.
+dotenv.config({ path: path.resolve(getServerRoot(), envFile), quiet: true });
 /** HS256 needs real entropy; a short shared secret is brute-forceable offline. */
 const MIN_JWT_SECRET_LENGTH = 32;
 

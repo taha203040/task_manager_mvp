@@ -1,13 +1,21 @@
 import fs from "fs";
 import path from "path";
 import pool from "../../Config/db";
+import { getServerRoot } from "../../Shared/utils/module-paths";
 
 /**
  * Minimal forward-only migration runner built on the existing pg pool.
  * Each .sql file in ./migrations runs once, inside a transaction, and is recorded in schema_migrations.
  * Usage: npm run migrate
+ *
+ * The runner is deliberately NOT part of the bundled server function: it needs the
+ * .sql files on disk, which a serverless bundle does not carry, so migrations stay
+ * a CI/human step against the database rather than a request-time operation. It
+ * runs under ts-node, i.e. CommonJS, and the .sql files live next to this source
+ * file under src/; built from the package root so the path does not depend on the
+ * CommonJS `__dirname` global.
  */
-const MIGRATIONS_DIR = path.resolve(__dirname, "migrations");
+const MIGRATIONS_DIR = path.resolve(getServerRoot(), "src", "Infrastructure", "Database", "migrations");
 
 async function run(): Promise<void> {
     await pool.query(
