@@ -12,5 +12,4 @@ process.env.JWT_EXPIRES_IN = "1h";
 process.env.DATABASE_URL = "postgres://test:test@127.0.0.1:1/test";
 process.env.DATABASE_SSL = "false";
 process.env.DB_CONNECT_TIMEOUT_MS = "2000";
-process.env.CORS_ORIGINS = "http://localhost:8080";
 process.env.TRUST_PROXY_HOPS = "1";

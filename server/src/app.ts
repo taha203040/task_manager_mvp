@@ -7,7 +7,6 @@ import teamrouter from './Interfaces/http/Routes/Team.routes';
 import memberRouter from './Interfaces/http/Routes/memebers.routes';
 import projectRouter from './Interfaces/http/Routes/project.routes';
 import activityRouter from './Interfaces/http/Routes/activity.routes';
-import cors from "cors";
 import config from './Config/envs';
 import cookieParser from 'cookie-parser';
 import { createAuthLimiter, createGlobalLimiter } from './Interfaces/http/middlewares/rateLimiters';
@@ -30,12 +29,6 @@ app.get('/healthz', (_req: Request, res: Response) => {
 app.use(createGlobalLimiter());
 app.use(express.json({ limit: '128kb' }));
 app.use(cookieParser());
-app.use(cors({
-    origin: config.app.corsOrigins,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
-}));
-
 // Strict ceiling on the credential endpoints. Mounted before the routers that own
 // these paths; skipSuccessfulRequests keeps normal logins from consuming the budget.
 const authLimiter = createAuthLimiter();

@@ -1,7 +1,7 @@
 .env
 .env.*
 # .env.example is the documented placeholder template and must stay tracked.
-!.env.example
+.env.example
 /node_modules/
 
 # Build output (tsconfig outDir). Compiled artifacts must never land in src/ again (TM-20).
@@ -14,3 +14,4 @@ src/**/*.js.map
 src/**/*.d.ts
 src/**/*.d.ts.map
 !src/types/**
+/certs/

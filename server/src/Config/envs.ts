@@ -1,8 +1,9 @@
+// server/src/Config/envs.ts (top of file, replace the two dotenv lines)
 import dotenv from "dotenv";
 import path from "path";
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
-
+const envFile = process.env.NODE_ENV === "production" ? ".env.production" : ".env";
+dotenv.config({ path: path.resolve(__dirname, "../../", envFile), quiet: true });
 /** HS256 needs real entropy; a short shared secret is brute-forceable offline. */
 const MIN_JWT_SECRET_LENGTH = 32;
 
@@ -12,8 +13,6 @@ export interface TaskyConfig {
         env: string;
         /** Trusted reverse-proxy hops in front of the API (0 = directly exposed). */
         trustProxyHops: number;
-        /** Exact-match allowlist used by CORS. */
-        corsOrigins: string[];
     };
     db: {
         connectionString: string;
@@ -61,14 +60,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): TaskyConfig {
         throw new Error(`JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters`);
     }
 
-    const corsOrigins = required(env, "CORS_ORIGINS")
-        .split(",")
-        .map((origin) => origin.trim())
-        .filter((origin) => origin.length > 0);
-    if (corsOrigins.length === 0) {
-        throw new Error("CORS_ORIGINS must contain at least one origin");
-    }
-
     const connectionString = required(env, "DATABASE_URL");
 
     return {
@@ -76,7 +67,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): TaskyConfig {
             port: readInteger(env, "PORT", 4000, 0, 65535),
             env: env.NODE_ENV?.trim() || "development",
             trustProxyHops: readInteger(env, "TRUST_PROXY_HOPS", 1, 0, 5),
-            corsOrigins,
         },
         db: {
             connectionString,

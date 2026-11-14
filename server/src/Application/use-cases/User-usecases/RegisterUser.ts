@@ -11,7 +11,9 @@ export class RegistserUser {
             throw new Error('User already Exists')
         }
         const hashed = await bcrypt.hash(password, 10)
-        const user: User = new User(email, hashed, username, Role)
+        // Self-registration always creates a plain USER: the `Role` argument comes
+        // from the request body, so honouring it would let anyone register as ADMIN.
+        const user: User = new User(email, hashed, username, "USER")
         await this.userrepo.create(user)
     }
 }
