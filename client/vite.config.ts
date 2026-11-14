@@ -26,9 +26,11 @@ export default defineConfig({
     server: {
       proxy: {
         // Dev only: `npm run dev` serves the SSR app on Vite's port and forwards
-        // the same `/api/v1` paths the production function handles, so the
-        // relative axios base URL works identically in both modes.
-        "/api/v1": {
+        // the same `/api` paths the production function handles, so the
+        // relative axios base URL (`/api/v1`) works identically in both modes.
+        // The key is `/api` (not `/api/v1`) so the proxy covers the whole
+        // Express surface, health probe included.
+        "/api": {
           target: `http://localhost:${process.env.API_PORT ?? 4000}`,
           changeOrigin: true,
         },

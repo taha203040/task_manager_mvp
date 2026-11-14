@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get("/auth/verify", { withCredentials: true });
+        const res = await api.get("/auth/verify");
         if (res.status === 200) setAuthorized(true);
         else navigate({ to: "/login" });
       } catch {
