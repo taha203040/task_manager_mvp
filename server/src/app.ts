@@ -19,6 +19,13 @@ const app = express();
 app.set('trust proxy', config.app.trustProxyHops);
 app.disable('x-powered-by');
 
+// Liveness probe for the platform. Deliberately mounted BEFORE the rate limiters:
+// a throttled instance must still answer the health check, otherwise the platform
+// marks it dead and restarts it instead of shedding load. No auth, no database.
+app.get('/healthz', (_req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 // Broad per-IP ceiling first, so even unauthenticated floods are bounded.
 app.use(createGlobalLimiter());
 app.use(express.json({ limit: '128kb' }));
@@ -50,9 +57,16 @@ app.get('/', (req: Request, res: Response) => {
 
 // Only bind a port when run directly. Importing the app (tests, tooling) must not
 // start a listener, which would make the module impossible to exercise in-process.
-if (require.main === module) {
-    const PORT = config.app.port;
-    app.listen(PORT, () => console.log('Server running', PORT));
+// The `typeof` guard is required because Nitro bundles this file as ESM for the
+// Vercel function, where bare `require`/`module` would throw at import time and
+// take the whole SSR function down with them.
+const isDirectRun = typeof require !== 'undefined' && require.main === module;
+
+if (isDirectRun) {
+    const PORT = Number(process.env.PORT) || config.app.port;
+    // Bind all interfaces: the platform's router reaches the container over its
+    // private network, so a loopback-only listener is unreachable.
+    app.listen(PORT, '0.0.0.0', () => console.log('Server running', PORT));
 }
 
 export default app;
