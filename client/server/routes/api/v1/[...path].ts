@@ -2,7 +2,10 @@
 // package, while h3 is only a transitive one, so this specifier is guaranteed to
 // resolve in a clean CI install no matter how npm lays out the tree.
 import { fromNodeHandler } from "nitro/h3";
-import app from "../../../../../server/src/app";
+// Resolved through the npm workspace link, not a relative path across the Root
+// Directory: `secure_api` is the server package (server/package.json) and is now a
+// declared dependency of the client, so npm guarantees the symlink exists.
+import app from "secure_api/src/app";
 
 /**
  * Single-origin linker: Nitro serves the SSR pages and hands every /api/v1/*

@@ -1,8 +1,8 @@
 // Imported through `nitro/h3`, not `h3`: nitro is a declared dependency of this
 // package, while h3 is only a transitive one (see the API route for detail).
 import { fromNodeHandler } from "nitro/h3";
-// client/server/routes/ -> up 3 -> repo root -> server/src/app
-import app from "../../../server/src/app";
+// Same workspace-resolved import as the API route (see that file for detail).
+import app from "secure_api/src/app";
 
 /**
  * `/healthz` lives on the Express app (mounted before its rate limiters), but
