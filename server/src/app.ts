@@ -38,9 +38,9 @@ app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)
 app.use('/api/v1/projects/', projectRouter)
 app.use('/api/v1/activity', activityRouter)
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World');
-    console.log('server running')
-});
-console.log('serer running')
+// app.get('/', (req: Request, res: Response) => {
+//     res.send('Hello World');
+//     console.log('server running')
+// });
+// console.log('serer running')
 export default app
