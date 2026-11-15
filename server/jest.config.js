@@ -10,4 +10,6 @@ module.exports = {
     ...tsJestTransformCfg,
   },
   clearMocks: true,
+  // dist/ holds the compiled copies of src/, so without this every test runs twice.
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };

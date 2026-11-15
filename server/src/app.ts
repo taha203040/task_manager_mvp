@@ -14,19 +14,21 @@ import cors from "cors";
 import config from './Config/envs';
 import cookieParser from 'cookie-parser'
 const app = express();
-const limmiter = rateLimit({
+const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: "Too many requests from this IP, please try again later.",
     standardHeaders: true,
     legacyHeaders: false
 })
+app.set('trust proxy', 1);   // needed so rate-limit sees the real IP on Vercel
+app.use(limiter);           // you created the limiter but never applied it
 app.use(express.json());
 app.use(cookieParser())
 app.use(cors({
-     origin: "http://localhost:8080",
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  credentials: true
+    origin: process.env.CLIENT_URL || "http://localhost:8080",  // set CLIENT_URL on Vercel to your frontend URL
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true
 }));
 app.use('/api/v1/members/', memberRouter)
 app.use('/api/v1/auth/', authrouter)
@@ -36,13 +38,9 @@ app.use('/api/v1/teams/', teamrouter);
 app.use('/api/v1/invites/', inviteRouter)
 app.use('/api/v1/projects/', projectRouter)
 app.use('/api/v1/activity', activityRouter)
-const PORT = config.app.port
-
-console.log('serer running')
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World');
-    console.log('serer running')
+    console.log('server running')
 });
-
-
-app.listen(PORT, () => console.log('Server running',PORT));
+console.log('serer running')
+export default app

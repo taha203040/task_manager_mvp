@@ -9,7 +9,10 @@
     "allowSyntheticDefaultImports": true,
     // File Layout
     "rootDir": "./src",
-    "typeRoots": ["./node_modules/@types", "./src/types"], // "outDir": "./dist",
+    // Without an outDir, `tsc` drops the compiled .js/.d.ts/.map files next to the sources
+    // inside src/. Keep the build output in dist/ (matches package.json "main" and "start").
+    "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",
@@ -45,5 +48,8 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
-  }
+  },
+  // api/ is the serverless entry point (outside rootDir); it is built by the platform, not by `tsc`.
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

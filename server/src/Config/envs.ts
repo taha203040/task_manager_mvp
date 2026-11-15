@@ -1,21 +1,23 @@
-import dotenv from "dotenv";
-import path from "path";
+try {
+    process.loadEnvFile(); // reads .env from the folder where you run the server
+} catch {
+    // no .env file: fall back to variables already set in the environment
+}
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+function required(name: string): string {
+    const value = process.env[name]?.trim();
+    if (!value) throw new Error(`Missing env var: ${name}`);
+    return value;
+}
 
 const config = {
-    app: {
-        port: parseInt(process.env.PORT || "4000", 10),
-        env: process.env.NODE_ENV || "development",
-    },
-    db: {
-        host: process.env.DB_HOST as string,
-        port: parseInt(process.env.DB_PORT as string),
-    },
+    port: Number(process.env.PORT ?? 3000),
+    corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:8080",
+    databaseUrl: required("DATABASE_URL"),
     jwt: {
-        secret: process.env.JWT_SECRET as string,
-        expiresIn: process.env.JWT_EXPIRES_IN as string,
+        secret: required("JWT_SECRET"),
+        expiresIn: process.env.JWT_EXPIRES_IN ?? "1h",
     },
-};
+} as const;
 
 export default config;
